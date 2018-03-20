@@ -1,4 +1,4 @@
-QT += quick
+QT += quick androidextras
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -12,7 +12,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    qgooglesigninapplication.cpp \
+    qmaincontroller.cpp \
+    controller.cpp \
+    jnicallbacks.cpp
 
 RESOURCES += qml.qrc
 
@@ -39,3 +43,36 @@ DISTFILES += \
     android/local.properties
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+HEADERS += \
+    qgooglesigninapplication.h \
+    qmaincontroller.h \
+    controller.h
+
+# Firebase
+QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.4.1
+
+isEmpty(QTFIREBASE_SDK_PATH) {
+    warning("Please set QTFIREBASE_SDK_PATH to the Firebase SDK path")
+}
+
+INCLUDEPATH += \
+    $$QTFIREBASE_SDK_PATH/include \
+    \
+
+# NOTE the order of linking is important!
+android {
+    QTFIREBASE_SDK_LIBS_PATH = $$QTFIREBASE_SDK_PATH/libs/android/$$ANDROID_TARGET_ARCH/gnustl
+    DEPENDPATH += $$QTFIREBASE_SDK_LIBS_PATH
+}
+
+# Firebase common
+PRE_TARGETDEPS += $$QTFIREBASE_SDK_LIBS_PATH/libapp.a
+LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lapp
+
+# Firebase auth
+PRE_TARGETDEPS += $$QTFIREBASE_SDK_LIBS_PATH/libauth.a
+LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lauth
+
+# Once again (je ne sais pas si c'est obligatoire, mais ça ne fait pas de mal)
+LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lapp

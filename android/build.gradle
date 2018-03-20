@@ -5,12 +5,17 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.google.gms:google-services:3.2.0' // google-services plugin
+
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+        maven {
+            url "https://maven.google.com" // Google's Maven repository
+        }
     }
 }
 
@@ -18,6 +23,15 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.google.firebase:firebase-core:11.8.0'
+    compile 'com.google.android.gms:play-services-auth:11.8.0'
+
+    // Firebase
+    compile 'com.google.firebase:firebase-auth:11.8.0'
+    compile 'com.google.android.gms:play-services-base:11.8.0'
+
+    // Getting a "Could not find" error? Make sure you have
+    // added the Google maven respository to your root build.gradle
 }
 
 android {
@@ -38,6 +52,10 @@ android {
 
     buildToolsVersion androidBuildToolsVersion
 
+    defaultConfig {
+        applicationId "org.renan.android.dev.gsi"
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -55,3 +73,6 @@ android {
         abortOnError false
     }
 }
+
+// ADD THIS AT THE BOTTOM
+apply plugin: 'com.google.gms.google-services'
