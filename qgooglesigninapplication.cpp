@@ -59,11 +59,8 @@ void QGoogleSignInApplication::signIn(bool silently)
         // Is the token a valid one ?
         QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("org.renan.android.firebase.auth.QGoogleSignIn", "refreshToken", "(Landroid/content/Context;Z)Ljava/lang/String;", QtAndroid::androidActivity().object(), silently);
         tokenId = result.toString();
-        if (0 == tokenId.size()/* && !silently*/)
+        if (0 == tokenId.size())
         {
-//            // error case
-//            // we choose to try again with Intent
-//            startGSIIntent();
             emit failedRefresh(ERROR_UNKNOWN, silently);   // implement any behaviour
         }
         else if (WAIT_FOR_ASYNC_ANSWER.compare(tokenId))
@@ -126,7 +123,6 @@ void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId)
     result.OnCompletion(
         [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
         {
-//            MyProgramContext* program_context = static_cast<MyProgramContext*>(user_data);
             (void)user_data;
 
             if (result.error() == firebase::auth::kAuthErrorNone)
@@ -134,10 +130,6 @@ void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId)
                 firebase::auth::User* user = *result.result();
                 qInfo() << " Authenticated email : " << user->email().c_str();
 
-//                // Perform other actions on User, if you like.
-//                firebase::auth::User::UserProfile profile;
-//                profile.display_name = program_context->display_name;
-//                user->UpdateUserProfile(profile);
                 emit qGoogleSignInApp->firebaseAuthSucceed(user);
             }
             else
@@ -152,7 +144,7 @@ void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId)
 void QGoogleSignInApplication::onFailedRefresh(int statusCode, bool silently)
 {
     // TODO : application state is in our Firebase user (tbd)
-    // so, we do not have to transmit more state. I think. I beleive. I guess. I don't know.
+    // so, we do not have to transmit more state. I think. I believe. I guess. I don't know.
     if (!silently)
     {
         // avoid loops : should we pass a counter as well ? or anything that informs us that
@@ -166,5 +158,5 @@ void QGoogleSignInApplication::onFailedRefresh(int statusCode, bool silently)
 void QGoogleSignInApplication::onSuccessfulSignOut()
 {
     // handle state, if necessary
-    qInfo() << "User successfuly signed out the application";
+    qInfo() << "User successfuly signed out of the application";
 }

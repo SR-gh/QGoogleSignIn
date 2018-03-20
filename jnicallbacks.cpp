@@ -4,6 +4,8 @@
 
 extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSignIn_onSuccessfulRefresh(JNIEnv *env, jclass cls,  jstring token)
 {
+    (void) env;
+    (void) cls;
     qInfo() << "native onSuccessfulRefresh";
 
     // http://doc.qt.io/qt-5/qandroidjniobject.html#toString
@@ -17,14 +19,16 @@ extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSi
 
 extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSignIn_onFailedRefresh(JNIEnv *env, jclass cls, jint statusCode, jboolean silently)
 {
+    (void) env;
+    (void) cls;
     qInfo() << "native onFailedRefresh, code=" << statusCode;
-    // TODO : is this catch-all behaviour OK ? I don't think so.
-    // At least we should not loop !
-    emit qGoogleSignInApp->failedRefresh(statusCode, silently);// TODO : think ! I'm adding this one to handle my app case
+    emit qGoogleSignInApp->failedRefresh(statusCode, silently);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSignIn_onSuccessfulSignOut(JNIEnv *env, jclass cls)
 {
+    (void) env;
+    (void) cls;
     qInfo() << "native onSuccessfulSignOut";
     emit qGoogleSignInApp->successfulSignOut();
 }
