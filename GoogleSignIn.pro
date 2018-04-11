@@ -16,7 +16,9 @@ SOURCES += main.cpp \
     qgooglesigninapplication.cpp \
     qmaincontroller.cpp \
     controller.cpp \
-    jnicallbacks.cpp
+    qfirebase.cpp \
+    qauthgsi.cpp \
+    qgsijnicallbacks.cpp
 
 RESOURCES += qml.qrc
 
@@ -47,7 +49,9 @@ ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 HEADERS += \
     qgooglesigninapplication.h \
     qmaincontroller.h \
-    controller.h
+    controller.h \
+    qfirebase.h \
+    qauthgsi.h
 
 # Firebase
 QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.4.1

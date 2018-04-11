@@ -14,7 +14,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSi
     // TODO: Think. Do we have another context than app that may launch
     // concurrent refreshes ? Shall we pass a ref through JNI to get this
     // context back ?
-    emit qGoogleSignInApp->gsiTokenReceived(tokenId);
+    emit qGoogleSignInApp->completelySuspiciousGetterOfAuthGSI()->gsiTokenReceived(tokenId);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSignIn_onFailedRefresh(JNIEnv *env, jclass cls, jint statusCode, jboolean silently)
@@ -22,7 +22,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSi
     (void) env;
     (void) cls;
     qInfo() << "native onFailedRefresh, code=" << statusCode;
-    emit qGoogleSignInApp->failedRefresh(statusCode, silently);
+    emit qGoogleSignInApp->completelySuspiciousGetterOfAuthGSI()->failedRefresh(statusCode, silently);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSignIn_onSuccessfulSignOut(JNIEnv *env, jclass cls)
@@ -30,6 +30,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_renan_android_firebase_auth_QGoogleSi
     (void) env;
     (void) cls;
     qInfo() << "native onSuccessfulSignOut";
-    emit qGoogleSignInApp->successfulSignOut();
+    emit qGoogleSignInApp->completelySuspiciousGetterOfAuthGSI()->successfulSignOut();
 }
 

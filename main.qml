@@ -9,8 +9,11 @@ Window {
     title: qsTr("Firebase Google Sign In demonstration")
     Column
     {
+        spacing: aButton.height/4
+        anchors.centerIn: parent
         Button
         {
+            id:aButton
             text: qsTr("Sign In")
             onPressed: ctrlMain.signIn()
         }
