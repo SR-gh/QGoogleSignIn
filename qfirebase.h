@@ -25,6 +25,7 @@ public:
     void signInWithGSI(QString tokenId);
     void signInAnonymously();
     void signOut();
+    void linkWithGSI(QString tokenId);
 
     firebase::auth::User* getUser();
 
@@ -32,6 +33,8 @@ signals:
     // FB
     void firebaseAuthSucceed(firebase::auth::User* user, int authType);
     void firebaseAuthFailed(int errorCode, QString errorMessage);
+    void firebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
+    void firebaseAuthLinkFailed(int errorCode, QString errorMessage);
 
 public slots:
 private:

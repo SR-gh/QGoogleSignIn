@@ -59,13 +59,14 @@ signals:
 private:
     Q_DISABLE_COPY(QGoogleSignInApplication)
     void onApplicationStateChanged(Qt::ApplicationState state);
-    void onGsiTokenReceived(QString tokenId);   // pas trop de raison de le mettre ici, si ? Si l'appli veut le choper, pourquoi pas. Mais comment dérancher le comportement par défaut, dans ce cas-là ?
-    void onGsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> jniObject);   // pas trop de raison de le mettre ici, si ? Si l'appli veut le choper, pourquoi pas. Mais comment dérancher le comportement par défaut, dans ce cas-là ?
+    void onGsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason);   // pas trop de raison de le mettre ici, si ? Si l'appli veut le choper, pourquoi pas. Mais comment dérancher le comportement par défaut, dans ce cas-là ?
+    void onGsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> jniObject);
     void onFailedRefresh(int statusCode, bool silently);
     void onSuccessfulSignOut();
 
     void onFirebaseAuthSucceed(firebase::auth::User* user, int authType); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
     void onFirebaseAuthFailed(int errorCode, QString errorMessage);
+    void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
 
 private:
     std::unique_ptr<QFirebase> qFirebase;

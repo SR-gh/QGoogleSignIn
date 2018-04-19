@@ -23,6 +23,7 @@ void QGoogleSignInApplication::init()
     // auth
     connect(qFirebase.get(), &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
     connect(qFirebase.get(), &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
+    connect(qFirebase.get(), &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
 
     // GSI handling
     connect(qAuthGSI.get(), &QAuthGSI::gsiTokenReceived, this, &QGoogleSignInApplication::onGsiTokenReceived);
@@ -37,7 +38,19 @@ void QGoogleSignInApplication::init()
 
 void QGoogleSignInApplication::signInWithGSI(bool silently)
 {
-    qAuthGSI->signIn(silently);
+    firebase::auth::User* user = qFirebase->getUser();
+    if (user)
+    {
+        // TODO : check that the user is not logged with :
+        // 1- any GSI account ? (if only one GSI account is allowed per user)
+        // 2- this particular GSI account ? (what are the consequences if not checked ?)
+        // if (user->)… not done
+
+        // As we already are logged, we asked not to sign in, but to associate credentials
+        qAuthGSI->obtainToken();
+    }
+    else
+        qAuthGSI->signIn(silently);
 }
 
 void QGoogleSignInApplication::signInAnonymously()
@@ -69,7 +82,7 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
             {
             case QFirebase::AuthType::GSI:
                 // Sign In with GSI, silently
-                signInWithGSI(true);
+                qAuthGSI->signIn(true);
                 break;
             case QFirebase::AuthType::UNDEFINED:
             case QFirebase::AuthType::ANONYMOUS:
@@ -96,9 +109,12 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
 
 }
 
-void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId)
+void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason)
 {
-    qFirebase->signInWithGSI(tokenId);
+    if (QAuthGSI::GSIJavaIntent::QGSI_SIGN_IN == reason)
+        qFirebase->signInWithGSI(tokenId);
+    else
+        qFirebase->linkWithGSI(tokenId);
 }
 
 void QGoogleSignInApplication::onGsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> jniObject)
@@ -158,6 +174,15 @@ void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString error
     (void) errorCode;
     (void) errorMessage;
     qInfo() << "User could not log in. You may want to handle this case in a particular way.";
+}
+
+void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user, int p_authType)
+{
+    (void) user;
+    QFirebase::AuthType authType = static_cast<QFirebase::AuthType>(p_authType);
+    qInfo() << "User successfuly linked an account to their Firebase account. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
+    if (QFirebase::AuthType::ANONYMOUS == lastSuccessfulAuthType || QFirebase::AuthType::UNDEFINED == lastSuccessfulAuthType)
+        lastSuccessfulAuthType = authType;
 }
 
 void QGoogleSignInApplication::setHandlingActivityResult(bool value)

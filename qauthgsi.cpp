@@ -18,7 +18,7 @@ QAuthGSI::QAuthGSI(QGuiApplication *parent) : QObject(parent)
 void QAuthGSI::QGSIAARR::handleActivityResult(int receiverRequestCode, int resultCode, const QAndroidJniObject &data)
 {
     qInfo() << "handleActivityResult(receiverRequestCode=" << receiverRequestCode << ", resultCode=" << resultCode << ",data=" << reinterpret_cast<const void*>(&data) << ")";
-    if (QGSI_SIGN_IN == receiverRequestCode)
+    if (QGSI_SIGN_IN == receiverRequestCode || QGSI_GET_TOKEN == receiverRequestCode)
     {
         if(RESULT_OK == resultCode)
         {
@@ -27,8 +27,13 @@ void QAuthGSI::QGSIAARR::handleActivityResult(int receiverRequestCode, int resul
             qInfo() << tokenId;
             if (tokenId.size() > 0)
             {
-                qGoogleSignInApp->setHandlingActivityResult(true);
-                emit caller->gsiTokenReceived(tokenId);
+                // If we asked for a sign in, then we should not try
+                // to sign in concurrently when resuming the activity.
+                // If we just asked for a token, then the previous
+                // sign in mode may be attempted when resuming the activity.
+                if (QGSI_SIGN_IN == receiverRequestCode)
+                    qGoogleSignInApp->setHandlingActivityResult(true);
+                emit caller->gsiTokenReceived(tokenId, static_cast<GSIJavaIntent>(receiverRequestCode));
             }
         }
         else
@@ -43,13 +48,13 @@ void QAuthGSI::QGSIAARR::handleActivityResult(int receiverRequestCode, int resul
     }
 }
 
-void QAuthGSI::startGSIIntent()
+void QAuthGSI::startGSIIntent(QAuthGSI::GSIJavaIntent reason)
 {
     QAndroidJniObject jItent = QAndroidJniObject::callStaticObjectMethod("org.renan.android.firebase.auth.QGoogleSignIn", "getGSIIntent", "(Landroid/content/Context;)Landroid/content/Intent;", QtAndroid::androidActivity().object());
-    QtAndroid::startActivity(jItent, QGSI_SIGN_IN, activityReceiver.get());
+    QtAndroid::startActivity(jItent, reason, activityReceiver.get());
 }
 
-void QAuthGSI::signIn(bool silently)
+QString QAuthGSI::obtainTokenImpl(bool silently, QAuthGSI::GSIJavaIntent reason)
 {
     QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("org.renan.android.firebase.auth.QGoogleSignIn", "getTokenIdFromSignedAccount", "(Landroid/content/Context;)Ljava/lang/String;", QtAndroid::androidActivity().object());
     QString tokenId = result.toString();
@@ -58,9 +63,15 @@ void QAuthGSI::signIn(bool silently)
     if (0 == tokenId.size())
     {
         if (!silently)
-            startGSIIntent();
+            startGSIIntent(reason);
     }
-    else
+    return tokenId;
+}
+
+void QAuthGSI::signIn(bool silently)
+{
+    QString tokenId = obtainTokenImpl(silently, GSIJavaIntent::QGSI_SIGN_IN);
+    if (0 < tokenId.size())
     {
         // Is the token a valid one ?
         QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("org.renan.android.firebase.auth.QGoogleSignIn", "refreshToken", "(Landroid/content/Context;Z)Ljava/lang/String;", QtAndroid::androidActivity().object(), silently);
@@ -74,7 +85,7 @@ void QAuthGSI::signIn(bool silently)
             // must do nothing : treated in a callback
         }
         else
-            emit gsiTokenReceived(tokenId);
+            emit gsiTokenReceived(tokenId, GSIJavaIntent::QGSI_SIGN_IN);
     }
 }
 
@@ -83,4 +94,17 @@ void QAuthGSI::signOut()
     auto result = QAndroidJniObject::callStaticMethod<jboolean>("org.renan.android.firebase.auth.QGoogleSignIn", "signOut", "(Landroid/content/Context;)Z", QtAndroid::androidActivity().object());
     if (result)
         emit successfulSignOut();
+}
+
+void QAuthGSI::obtainToken()
+{
+    QString tokenId = obtainTokenImpl(false, GSIJavaIntent::QGSI_GET_TOKEN);
+    if (0 < tokenId.size())
+        emit gsiTokenReceived(tokenId, GSIJavaIntent::QGSI_GET_TOKEN);
+}
+
+QAuthGSI::QAuthGSIRegisterer::QAuthGSIRegisterer()
+{
+    qRegisterMetaType<QSharedPointer<const QAndroidJniObject>>();
+    qRegisterMetaType<QAuthGSI::GSIJavaIntent>();
 }

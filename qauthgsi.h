@@ -4,21 +4,23 @@
 #include <QGuiApplication>
 #include <QAndroidActivityResultReceiver>
 #include <memory>
-Q_DECLARE_METATYPE(QSharedPointer<const QAndroidJniObject>)
 
 class QAuthGSI : public QObject
 {
     Q_OBJECT
-    enum
+public:
+    typedef enum
     {
-        QGSI_SIGN_IN = 1973
-    }GSIJavaIntent;
-    enum
+        QGSI_SIGN_IN = 1973,
+        QGSI_GET_TOKEN = 1974
+    } GSIJavaIntent;    // Made public because used in the interface now
+private:
+    typedef enum
     {
         ERROR_INVALID_ACCOUNT = 0x10001,
         ERROR_INVALID_TOKEN = 0x10002,
     } GSIJavaErrorCodes;
-    enum
+    typedef enum
     {
         ERROR_UNKNOWN = 0x20001,    // We do not get an informative error code in all cases.
     } GSICppErrorCodes;
@@ -33,10 +35,7 @@ class QAuthGSI : public QObject
     // Meta-type registering
     struct QAuthGSIRegisterer
     {
-        QAuthGSIRegisterer()
-        {
-            qRegisterMetaType<QSharedPointer<const QAndroidJniObject>>();
-        }
+        QAuthGSIRegisterer();
     };
     static const QAuthGSIRegisterer registerer;
 
@@ -48,20 +47,18 @@ public:
     //Interface
     void signIn(bool silently);
     void signOut();
+    void obtainToken();
 
     // Why is it public and here ? Because it is called by JNI handlers. NO MORE :)
 private:
-    void startGSIIntent();
+    void startGSIIntent(QAuthGSI::GSIJavaIntent reason);
+    QString obtainTokenImpl(bool silently, QAuthGSI::GSIJavaIntent reason); // no reason to have a bool nor a QString on public interface right now
 signals:
     // GSI
-    void gsiTokenReceived(QString tokenId);
+    void gsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason);
     void gsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> data);
     void failedRefresh(int statusCode, bool silently);
     void successfulSignOut();
-private:
-    void onGsiTokenReceived(QString tokenId);
-    void onFailedRefresh(int statusCode, bool silently);
-    void onSuccessfulSignOut();
 
 public slots:
 private:
@@ -71,5 +68,7 @@ private:
     std::unique_ptr<QGSIAARR> activityReceiver;
 
 };
+Q_DECLARE_METATYPE(QSharedPointer<const QAndroidJniObject>)
+Q_DECLARE_METATYPE(QAuthGSI::GSIJavaIntent) // After QAuthGSI declaration
 
 #endif // QAUTHGSI_H
