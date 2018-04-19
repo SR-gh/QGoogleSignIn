@@ -6,10 +6,10 @@ QMainController::QMainController(const QString& aName, QObject *parent) : QObjec
 
 }
 
-void QMainController::signIn()
+void QMainController::signInWithGSI()
 {
     // TODO : use a delegate with an Interface, not a global ?
-    qGoogleSignInApp->signIn(false);
+    qGoogleSignInApp->signInWithGSI(false);
 }
 
 void QMainController::signOut()

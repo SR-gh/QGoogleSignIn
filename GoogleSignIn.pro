@@ -42,7 +42,9 @@ DISTFILES += \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat \
     android/gradle.properties \
-    android/local.properties
+    android/local.properties \
+    android/src/org/renan/android/firebase/auth/QGoogleSignIn.java \
+    android/src/org/renan/android/firebase/auth/QGoogleSignInActivity.java
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

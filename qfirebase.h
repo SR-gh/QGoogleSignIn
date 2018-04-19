@@ -14,13 +14,23 @@ class QFirebase : public QObject
 public:
     explicit QFirebase(QGuiApplication *parent);
 
+    enum AuthType
+    {
+        UNDEFINED,
+        ANONYMOUS,
+        GSI,
+    };
+
     // Interface
     void signInWithGSI(QString tokenId);
+    void signInAnonymously();
     void signOut();
+
+    firebase::auth::User* getUser();
 
 signals:
     // FB
-    void firebaseAuthSucceed(firebase::auth::User* user);
+    void firebaseAuthSucceed(firebase::auth::User* user, int authType);
     void firebaseAuthFailed(int errorCode, QString errorMessage);
 
 public slots:

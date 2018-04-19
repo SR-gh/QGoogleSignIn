@@ -4,6 +4,7 @@
 #include <QGuiApplication>
 #include <QAndroidActivityResultReceiver>
 #include <memory>
+Q_DECLARE_METATYPE(QSharedPointer<const QAndroidJniObject>)
 
 class QAuthGSI : public QObject
 {
@@ -29,6 +30,16 @@ class QAuthGSI : public QObject
         void handleActivityResult(int receiverRequestCode, int resultCode, const QAndroidJniObject &data) override;
     };
 
+    // Meta-type registering
+    struct QAuthGSIRegisterer
+    {
+        QAuthGSIRegisterer()
+        {
+            qRegisterMetaType<QSharedPointer<const QAndroidJniObject>>();
+        }
+    };
+    static const QAuthGSIRegisterer registerer;
+
 public:
     static const QString WAIT_FOR_ASYNC_ANSWER;
 public:
@@ -44,6 +55,7 @@ private:
 signals:
     // GSI
     void gsiTokenReceived(QString tokenId);
+    void gsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> data);
     void failedRefresh(int statusCode, bool silently);
     void successfulSignOut();
 private:

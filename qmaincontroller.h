@@ -12,7 +12,7 @@ public:
     const QObject* asQObject() const override { return this; }
     QObject* asQObject() override { return this; }
 
-    Q_INVOKABLE void signIn();
+    Q_INVOKABLE void signInWithGSI();
     Q_INVOKABLE void signOut();
 signals:
 

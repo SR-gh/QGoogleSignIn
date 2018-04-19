@@ -10,12 +10,12 @@ Window {
     Column
     {
         spacing: aButton.height/4
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
         Button
         {
             id:aButton
-            text: qsTr("Sign In")
-            onPressed: ctrlMain.signIn()
+            text: qsTr("Sign In with GSI")
+            onPressed: ctrlMain.signInWithGSI()
         }
         Button
         {
