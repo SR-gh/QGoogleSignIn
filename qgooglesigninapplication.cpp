@@ -15,25 +15,28 @@
 }
 void QGoogleSignInApplication::init()
 {
-    qFirebase = std::unique_ptr<QFirebase>(new QFirebase(this));
-    qAuthGSI = std::unique_ptr<QAuthGSI>(new QAuthGSI(this));
+    qFirebase = new QFirebase(this);    // parent's lifetime
+    qAuthGSI = new QAuthGSI(this);      // parent's lifetime
     // connections
     connect(this, &QGoogleSignInApplication::applicationStateChanged, this, &QGoogleSignInApplication::onApplicationStateChanged);
     // Firebase handling
     // auth
-    connect(qFirebase.get(), &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
-    connect(qFirebase.get(), &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
-    connect(qFirebase.get(), &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
+    connect(qFirebase, &QFirebase::firebaseInitializationComplete, this, &QGoogleSignInApplication::onFirebaseInitializationComplete);
+    connect(qFirebase, &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
+    connect(qFirebase, &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
+    connect(qFirebase, &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
 
     // GSI handling
-    connect(qAuthGSI.get(), &QAuthGSI::gsiTokenReceived, this, &QGoogleSignInApplication::onGsiTokenReceived);
-    connect(qAuthGSI.get(), &QAuthGSI::gsiTokenRequestFailed, this, &QGoogleSignInApplication::onGsiTokenRequestFailed);
-    connect(qAuthGSI.get(), &QAuthGSI::failedRefresh, this, &QGoogleSignInApplication::onFailedRefresh);
-    connect(qAuthGSI.get(), &QAuthGSI::successfulSignOut, this, &QGoogleSignInApplication::onSuccessfulSignOut);
+    connect(qAuthGSI, &QAuthGSI::gsiTokenReceived, this, &QGoogleSignInApplication::onGsiTokenReceived);
+    connect(qAuthGSI, &QAuthGSI::gsiTokenRequestFailed, this, &QGoogleSignInApplication::onGsiTokenRequestFailed);
+    connect(qAuthGSI, &QAuthGSI::failedRefresh, this, &QGoogleSignInApplication::onFailedRefresh);
+    connect(qAuthGSI, &QAuthGSI::successfulSignOut, this, &QGoogleSignInApplication::onSuccessfulSignOut);
 
     // GUI controllers
     controllers.append(new QMainController("ctrlMain", this));
 
+    // sub-init with needed connections established.
+    qFirebase->init();
 }
 
 void QGoogleSignInApplication::signInWithGSI(bool silently)
@@ -51,6 +54,28 @@ void QGoogleSignInApplication::signInWithGSI(bool silently)
     }
     else
         qAuthGSI->signIn(silently);
+}
+
+void QGoogleSignInApplication::signInWithEmail(QString email, QString password)
+{
+    firebase::auth::User* user = qFirebase->getUser();
+    if (user)
+    {
+        // TODO : check that the user is not logged with :
+        // 1- any GSI account ? (if only one GSI account is allowed per user)
+        // 2- this particular GSI account ? (what are the consequences if not checked ?)
+        // if (user->)… not done
+
+        // As we already are logged, we asked not to sign in, but to associate credentials
+        qFirebase->linkWithEmail(email, password);
+    }
+    else
+        qFirebase->signInWithEmail(email, password);
+}
+
+void QGoogleSignInApplication::signUpWithEmail(QString email, QString password)
+{
+    qFirebase->signUpWithEmail(email, password);
 }
 
 void QGoogleSignInApplication::signInAnonymously()
@@ -80,11 +105,16 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
             lastSuccessfulAuthType = static_cast<QFirebase::AuthType>(settings.value("lastSuccessfulAuthType", QFirebase::AuthType::UNDEFINED).toInt());
             switch (lastSuccessfulAuthType)
             {
+            case QFirebase::AuthType::NO_SIGN_IN:
+            case QFirebase::AuthType::UNDEFINED:
+                break;
             case QFirebase::AuthType::GSI:
                 // Sign In with GSI, silently
                 qAuthGSI->signIn(true);
                 break;
-            case QFirebase::AuthType::UNDEFINED:
+            case QFirebase::AuthType::PASSWORD:
+                //signInWithEmail(WTF)
+                break;
             case QFirebase::AuthType::ANONYMOUS:
             default:
                 // Sign Anonymously
@@ -153,6 +183,7 @@ void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user,
     firebase::auth::User * authUser = qFirebase->getUser();
     const std::string authProviderId = authUser->provider_id();
     qInfo() << "authProviderId=" << authProviderId.c_str();
+    qInfo() << "The user is" << (authUser->is_anonymous() ? "" : "not") << "anonymously signed in.";
     // Where is firebase::auth::GoogleAuthProvider::PROVIDER_ID ??? Am I going to JNI a constant ?
 //    if (providerId == "google.com")
 //    {
@@ -172,8 +203,9 @@ void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user,
 void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString errorMessage)
 {
     (void) errorCode;
-    (void) errorMessage;
     qInfo() << "User could not log in. You may want to handle this case in a particular way.";
+    // Example of error reporting
+    emit error(errorMessage);
 }
 
 void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user, int p_authType)
@@ -183,6 +215,24 @@ void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *u
     qInfo() << "User successfuly linked an account to their Firebase account. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
     if (QFirebase::AuthType::ANONYMOUS == lastSuccessfulAuthType || QFirebase::AuthType::UNDEFINED == lastSuccessfulAuthType)
         lastSuccessfulAuthType = authType;
+}
+
+void QGoogleSignInApplication::onFirebaseInitializationComplete(firebase::InitResult result)
+{
+    setFirebaseInitialized(0 == result);
+}
+
+bool QGoogleSignInApplication::isFirebaseInitialized() const
+{
+    return firebaseInitialized;
+}
+
+void QGoogleSignInApplication::setFirebaseInitialized(bool b)
+{
+    const bool changed = b != firebaseInitialized;
+    firebaseInitialized = b;
+    if (changed)
+        emit applicationInitializedChanged(isFirebaseInitialized());
 }
 
 void QGoogleSignInApplication::setHandlingActivityResult(bool value)

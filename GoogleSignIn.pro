@@ -18,7 +18,8 @@ SOURCES += main.cpp \
     controller.cpp \
     qfirebase.cpp \
     qauthgsi.cpp \
-    qgsijnicallbacks.cpp
+    qgsijnicallbacks.cpp \
+    androidhelper.cpp
 
 RESOURCES += qml.qrc
 
@@ -53,7 +54,8 @@ HEADERS += \
     qmaincontroller.h \
     controller.h \
     qfirebase.h \
-    qauthgsi.h
+    qauthgsi.h \
+    androidhelper.h
 
 # Firebase
 QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.4.1

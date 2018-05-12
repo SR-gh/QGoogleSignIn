@@ -2,11 +2,15 @@
 #include <QAndroidJniObject>
 #include <QtAndroid>
 #include <qdebug.h>
+#include <tuple>
+#include <firebase/util.h>
 
-QFirebase::QFirebase(QGuiApplication *parent) : QObject(parent)
+QFirebase::QFirebase(QObject *parent) : QObject(parent)
 {
-    if (!parent)
-        throw "I must be given an application";
+}
+
+void QFirebase::init()
+{
 #if defined(__ANDROID__)
     // specific Android setup
     // Firebase should be considered available only on completion of this (possibly)
@@ -17,9 +21,21 @@ QFirebase::QFirebase(QGuiApplication *parent) : QObject(parent)
     m_firebaseApp = std::unique_ptr<firebase::App>(firebase::App::Create(firebase::AppOptions(), m_qjniEnv.operator ->(), QtAndroid::androidActivity().object()));
 #else
     // Unused code ! Left as a reminder
-  firebase::App* app = firebase::App::Create(firebase::AppOptions());
+    m_firebaseApp = std::unique_ptr<firebase::App>(firebase::App::Create(firebase::AppOptions()));
 #endif  // defined(__ANDROID__)
-    m_firebaseAuth = firebase::auth::Auth::GetAuth(m_firebaseApp.get());
+    qInfo() << "Starting FB init";
+    ::firebase::ModuleInitializer initializer;
+    initializer.Initialize(m_firebaseApp.get(), this, [](::firebase::App* app, void* context)
+                            {
+                                (void) app;
+                                auto myThis = static_cast<QFirebase*>(context);
+                                ::firebase::InitResult init_result;
+                                myThis->m_firebaseAuth = firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get());
+                                ::firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get(), &init_result);
+                                qInfo() << "Finished FB init with result=" << init_result;
+                                emit myThis->firebaseInitializationComplete(init_result);
+                                return init_result;
+    });
 }
 
 void QFirebase::signInWithGSI(QString tokenId)
@@ -43,7 +59,59 @@ void QFirebase::signInWithGSI(QString tokenId)
             }
             else
             {
-                qInfo() << " Google Sign In authentication failed with error : " << result.error_message();
+                qInfo() << " Google Sign In authentication failed with error : no=" << result.error() << " message=" << result.error_message();
+                emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
+            }
+        },
+    context);
+}
+
+void QFirebase::signInWithEmail(QString email, QString password)
+{
+    qInfo() << "Firebase Email Sign In";
+    firebase::Future<firebase::auth::User*> result =
+        m_firebaseAuth->SignInWithEmailAndPassword(email.toUtf8().data(), password.toUtf8().data());
+
+    void * context = this;
+    result.OnCompletion(
+        [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
+        {
+            if (result.error() == firebase::auth::kAuthErrorNone)
+            {
+                firebase::auth::User* user = *result.result();
+                qInfo() << " Firebase Email authenticated user : "  << user->uid().c_str() << " " << user->display_name().c_str() << "(" << user->email().c_str() << ")";
+
+                emit static_cast<QFirebase*>(user_data)->firebaseAuthSucceed(user, int(QFirebase::AuthType::PASSWORD));
+            }
+            else
+            {
+                qInfo() << " Firebase Email authentication failed with error : no=" << result.error() << " message=" << result.error_message();
+                emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
+            }
+        },
+    context);
+}
+
+void QFirebase::signUpWithEmail(QString email, QString password)
+{
+    qInfo() << "Firebase Email Sign Up";
+    firebase::Future<firebase::auth::User*> result =
+        m_firebaseAuth->CreateUserWithEmailAndPassword(email.toUtf8().data(), password.toUtf8().data());
+
+    void * context = this;
+    result.OnCompletion(
+        [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
+        {
+            if (result.error() == firebase::auth::kAuthErrorNone)
+            {
+                firebase::auth::User* user = *result.result();
+                qInfo() << " Firebase Email Created authenticated user : "  << user->uid().c_str() << " " << user->display_name().c_str() << "(" << user->email().c_str() << ")";
+
+                emit static_cast<QFirebase*>(user_data)->firebaseAuthSucceed(user, int(QFirebase::AuthType::PASSWORD));
+            }
+            else
+            {
+                qInfo() << " Firebase Email Created authentication failed with error : no=" << result.error() << " message=" << result.error_message();
                 emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
             }
         },
@@ -67,7 +135,7 @@ void QFirebase::signInAnonymously()
             }
             else
             {
-                qInfo() << " Anonymous authentication failed with error : " << result.error_message();
+                qInfo() << " Anonymous authentication failed with error : no=" << result.error() << " message=" << result.error_message();
                 emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
             }
         },
@@ -83,34 +151,55 @@ void QFirebase::signOut()
 void QFirebase::linkWithGSI(QString tokenId)
 {
     qInfo() << "Firebase GSI account linking to User";
+
     firebase::auth::Credential credential =
         firebase::auth::GoogleAuthProvider::GetCredential(tokenId.toUtf8().data(), nullptr);
-    firebase::auth::User* user = getUser();
-    if (!user)
-        return;
-    firebase::Future<firebase::auth::User*> result =
-        user->LinkWithCredential(credential);
-    void * context = this;
-    result.OnCompletion(
-        [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
-        {
-            if (result.error() == firebase::auth::kAuthErrorNone)
-            {
-                firebase::auth::User* user = *result.result();
-                qInfo() << " Linked GSI user : " << user->uid().c_str() << " " << user->display_name().c_str();
+    linkWithCredentials(credential, QFirebase::AuthType::GSI);
+}
 
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthLinkSucceed(user, int(QFirebase::AuthType::GSI));
-            }
-            else
-            {
-                qInfo() << " Failed to link GSI user with error : " << result.error_message();
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthLinkFailed(result.error(), result.error_message());
-            }
-        },
-    context);
+void QFirebase::linkWithEmail(QString email, QString password)
+{
+    qInfo() << "Firebase Email account linking to User";
+
+    firebase::auth::Credential credential =
+        firebase::auth::EmailAuthProvider::GetCredential(email.toUtf8().data(), password.toUtf8().data());
+    linkWithCredentials(credential, QFirebase::AuthType::PASSWORD);
 }
 
 firebase::auth::User *QFirebase::getUser()
 {
     return m_firebaseAuth->current_user();
 }
+
+void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType)
+{
+    firebase::auth::User* user = getUser();
+    if (!user)
+        return;
+
+    firebase::Future<firebase::auth::User*> result =
+        user->LinkWithCredential(credential);
+    auto contextData = new std::tuple<decltype(this), decltype(authType)> {this, authType};
+    void * context = contextData;
+    result.OnCompletion(
+        [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
+        {
+            //std::tuple<typeof(this), typeof(authType)> * contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
+            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
+            if (result.error() == firebase::auth::kAuthErrorNone)
+            {
+                firebase::auth::User* user = *result.result();
+                qInfo() << " Linked user : " << user->uid().c_str() << " " << user->display_name().c_str();
+
+                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkSucceed(user, int(std::get<1>(*contextDataLambda)));
+            }
+            else
+            {
+                qInfo() << " Failed to link user with error : no=" << result.error() << " message=" << result.error_message();
+                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkFailed(result.error(), result.error_message());
+            }
+            delete contextDataLambda;
+        },
+    context);
+}
+

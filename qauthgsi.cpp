@@ -59,8 +59,12 @@ QString QAuthGSI::obtainTokenImpl(bool silently, QAuthGSI::GSIJavaIntent reason)
     QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("org.renan.android.firebase.auth.QGoogleSignIn", "getTokenIdFromSignedAccount", "(Landroid/content/Context;)Ljava/lang/String;", QtAndroid::androidActivity().object());
     QString tokenId = result.toString();
     qInfo() << tokenId;
+    bool resetToken = false;
+    bool forceIntent = false;
+    if (resetToken)
+        tokenId = "";
     // no user previously signed in
-    if (0 == tokenId.size())
+    if (forceIntent || 0 == tokenId.size())
     {
         if (!silently)
             startGSIIntent(reason);

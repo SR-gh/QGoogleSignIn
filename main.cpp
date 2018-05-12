@@ -18,14 +18,16 @@ int main(int argc, char *argv[])
     app.init();
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    if (engine.rootObjects().isEmpty())
-        return -1;
 
+    engine.rootContext()->setContextProperty("theApp", (QObject*) &app);
     for (Controller* controller : app.getControllers())
     {
         engine.rootContext()->setContextProperty(controller->getName(), controller->asQObject());
     }
+
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    if (engine.rootObjects().isEmpty())
+        return -1;
 
     return app.exec();
 }

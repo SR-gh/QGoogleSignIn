@@ -27,6 +27,8 @@
 class QGoogleSignInApplication : public QGuiApplication
 {
     Q_OBJECT
+public:
+    Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
 
 public:
 #ifdef Q_QDOC
@@ -38,11 +40,13 @@ public:
     void init();
 
     // From Java Stuff
-    QAuthGSI * completelySuspiciousGetterOfAuthGSI() { return qAuthGSI.get(); }
+    QAuthGSI * completelySuspiciousGetterOfAuthGSI() { return qAuthGSI; }
 
     // Why is it public and here ? Because it is called by Controllers.
     // We need a Sign In delegate to provide to the Controller. Do we ?
     void signInWithGSI(bool silently);
+    void signInWithEmail(QString email, QString password);
+    void signUpWithEmail(QString email, QString password);
     void signInAnonymously();
     void signOut();
 
@@ -55,6 +59,8 @@ signals:
     //    // FB
     //    void firebaseAuthSucceed(firebase::auth::User* user);
 //    void firebaseAuthFailed(int errorCode, QString errorMessage);
+    void error(const QString errorMessage);
+    void applicationInitializedChanged(bool);
 
 private:
     Q_DISABLE_COPY(QGoogleSignInApplication)
@@ -67,14 +73,20 @@ private:
     void onFirebaseAuthSucceed(firebase::auth::User* user, int authType); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
     void onFirebaseAuthFailed(int errorCode, QString errorMessage);
     void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
+    void onFirebaseInitializationComplete(firebase::InitResult result);
 
 private:
-    std::unique_ptr<QFirebase> qFirebase;
-    std::unique_ptr<QAuthGSI> qAuthGSI;
+    bool isFirebaseInitialized() const;
+    void setFirebaseInitialized(bool b);
 
-    QList<Controller*> controllers;
+    QFirebase* qFirebase = nullptr;   // child deletion.
+    QAuthGSI* qAuthGSI = nullptr;     // child deletion.
+
+    bool firebaseInitialized = false;
     QFirebase::AuthType lastSuccessfulAuthType = QFirebase::AuthType::UNDEFINED;
     bool handlingActivityResult = false;    // this flag to handle the case when app respawns and handles both onActivityResult AND onApplicationStateChanged. Only one signin should be attempted.
+
+    QList<Controller*> controllers;
 };
 
 #endif // QGOOGLESIGNINAPPLICATION_H
