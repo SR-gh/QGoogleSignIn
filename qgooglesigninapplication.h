@@ -75,6 +75,9 @@ private:
     void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
     void onFirebaseInitializationComplete(firebase::InitResult result);
 
+    void onAuthStateChanged(PointerContainer<firebase::auth::Auth>);
+    void onIdTokenChanged(PointerContainer<firebase::auth::Auth>);
+
 private:
     bool isFirebaseInitialized() const;
     void setFirebaseInitialized(bool b);

@@ -25,6 +25,8 @@ void QGoogleSignInApplication::init()
     connect(qFirebase, &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
     connect(qFirebase, &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
     connect(qFirebase, &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
+    connect(qFirebase, &QFirebase::authStateChanged, this, &QGoogleSignInApplication::onAuthStateChanged);
+    connect(qFirebase, &QFirebase::idTokenChanged, this, &QGoogleSignInApplication::onIdTokenChanged);
 
     // GSI handling
     connect(qAuthGSI, &QAuthGSI::gsiTokenReceived, this, &QGoogleSignInApplication::onGsiTokenReceived);
@@ -116,9 +118,10 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
                 //signInWithEmail(WTF)
                 break;
             case QFirebase::AuthType::ANONYMOUS:
-            default:
                 // Sign Anonymously
                 signInAnonymously();
+                break;
+            default:
                 break;
             }
         }
@@ -220,6 +223,36 @@ void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *u
 void QGoogleSignInApplication::onFirebaseInitializationComplete(firebase::InitResult result)
 {
     setFirebaseInitialized(0 == result);
+}
+
+void QGoogleSignInApplication::onAuthStateChanged(PointerContainer<firebase::auth::Auth> pca)
+{
+    qInfo() << "Auth state changed.";
+    firebase::auth::Auth* auth = pca.getPtr();
+    firebase::auth::User* user = auth->current_user();
+    if (user != nullptr)
+    {
+        qInfo() << "Auth state changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
+    }
+    else
+    {
+        qInfo() << "Auth state : logout.";
+    }
+}
+
+void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth::Auth> pca)
+{
+    qInfo() << "IdToken changed.";
+    firebase::auth::Auth* auth = pca.getPtr();
+    firebase::auth::User* user = auth->current_user();
+    if (user != nullptr)
+    {
+        qInfo() << "IdToken changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
+    }
+    else
+    {
+        qInfo() << "IdToken : logout.";
+    }
 }
 
 bool QGoogleSignInApplication::isFirebaseInitialized() const

@@ -29,6 +29,11 @@ void QMainController::signUpWithEmail(QString email, QString password)
     qGoogleSignInApp->signUpWithEmail(email, password);
 }
 
+void QMainController::signInAnonymously()
+{
+    qGoogleSignInApp->signInAnonymously();
+}
+
 void QMainController::onError(const QString &errorMessage)
 {
     AndroidHelper::showToast(errorMessage);

@@ -51,9 +51,19 @@ Window
         }
         Button
         {
+            text: qsTr("Sign In anonymously")
+            onPressed: ctrlMain.signInAnonymously()
+            enabled: theApp.applicationInitialized
+        }
+        Button
+        {
             text: qsTr("Sign Out")
             onPressed: ctrlMain.signOut()
             enabled: theApp.applicationInitialized
+        }
+        Label
+        {
+            text: qsTr("Signed")
         }
     }
 }

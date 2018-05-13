@@ -8,9 +8,27 @@
 #include "firebase/app.h"
 #include "firebase/auth.h"
 
+#include "helper.h"
+
 class QFirebase : public QObject
 {
     Q_OBJECT
+
+    class QFirebaseAuthListener : public firebase::auth::AuthStateListener, public firebase::auth::IdTokenListener
+    {
+        QFirebase * caller;
+    public:
+        explicit QFirebaseAuthListener(QFirebase* caller);
+        void OnAuthStateChanged(firebase::auth::Auth* auth) override;
+        void OnIdTokenChanged(firebase::auth::Auth* auth) override;
+    };
+
+    // Meta-type registering
+    struct QFirebaseRegisterer
+    {
+        QFirebaseRegisterer();
+    };
+    static const QFirebaseRegisterer registerer;
 public:
     explicit QFirebase(QObject *parent);
 
@@ -73,16 +91,21 @@ signals:
     // emitted on initialization completion. Any call to a function of a QFirebase instance
     // before obtaining a successful result from this signal has undefined behaviour.
     void firebaseInitializationComplete(firebase::InitResult result);
+    // Reemitted from Firebase
+    void authStateChanged(PointerContainer<firebase::auth::Auth>);
+    void idTokenChanged(PointerContainer<firebase::auth::Auth>);
 
-public slots:
 private:
     void linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType);
-
+private:
+    void onFirebaseInitializationComplete(firebase::InitResult result);
 private:
     //Firebase
     QAndroidJniEnvironment m_qjniEnv;
     std::unique_ptr<firebase::App> m_firebaseApp; // must be deleted before m_qjniEnv, hence order of declaration matters.
     firebase::auth::Auth* m_firebaseAuth = nullptr; // non owning
+    std::unique_ptr<QFirebaseAuthListener> firebaseAuthListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
 };
+Q_DECLARE_METATYPE(PointerContainer<firebase::auth::Auth>)
 
 #endif // QFIREBASE_H

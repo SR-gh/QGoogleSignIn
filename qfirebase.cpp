@@ -4,25 +4,28 @@
 #include <qdebug.h>
 #include <tuple>
 #include <firebase/util.h>
+#include <memory>
 
-QFirebase::QFirebase(QObject *parent) : QObject(parent)
+const QFirebase::QFirebaseRegisterer QFirebase::registerer;
+
+QFirebase::QFirebase(QObject *parent) : QObject(parent),
+    firebaseAuthListener(std::make_unique<QFirebaseAuthListener>(this))
 {
 }
 
 void QFirebase::init()
 {
 #if defined(__ANDROID__)
-    // specific Android setup
-    // Firebase should be considered available only on completion of this (possibly)
-    // asynchronous initialization.
-    // Either the application can do something while waiting or not.
-    // IMO, it should not hang and should be able to display its waiting
-    // status and be left if asked to.
+    // From : https://firebase.google.com/docs/reference/cpp/class/firebase/app
+    // New App instance, the App should not be destroyed for the lifetime of the application.
+    //
+    // Maybe this is not a good idea, this unique_ptr. But the doc says should, not must, so…
     m_firebaseApp = std::unique_ptr<firebase::App>(firebase::App::Create(firebase::AppOptions(), m_qjniEnv.operator ->(), QtAndroid::androidActivity().object()));
 #else
-    // Unused code ! Left as a reminder
+    // Unused code ! Left as a reminder for other platforms
     m_firebaseApp = std::unique_ptr<firebase::App>(firebase::App::Create(firebase::AppOptions()));
 #endif  // defined(__ANDROID__)
+
     qInfo() << "Starting FB init";
     ::firebase::ModuleInitializer initializer;
     initializer.Initialize(m_firebaseApp.get(), this, [](::firebase::App* app, void* context)
@@ -33,7 +36,7 @@ void QFirebase::init()
                                 myThis->m_firebaseAuth = firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get());
                                 ::firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get(), &init_result);
                                 qInfo() << "Finished FB init with result=" << init_result;
-                                emit myThis->firebaseInitializationComplete(init_result);
+                                myThis->onFirebaseInitializationComplete(init_result);
                                 return init_result;
     });
 }
@@ -203,3 +206,30 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
     context);
 }
 
+void QFirebase::onFirebaseInitializationComplete(firebase::InitResult result)
+{
+    qInfo() << "Registering Firebase auth listeners";
+    m_firebaseAuth->AddAuthStateListener(firebaseAuthListener.get());
+    m_firebaseAuth->AddIdTokenListener(firebaseAuthListener.get());
+    emit firebaseInitializationComplete(result);
+}
+
+
+QFirebase::QFirebaseAuthListener::QFirebaseAuthListener(QFirebase *caller) : caller(caller)
+{
+}
+
+void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *auth)
+{
+    emit caller->authStateChanged(PointerContainer<firebase::auth::Auth>(auth));
+}
+
+void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
+{
+    emit caller->idTokenChanged(PointerContainer<firebase::auth::Auth>(auth));
+}
+
+QFirebase::QFirebaseRegisterer::QFirebaseRegisterer()
+{
+    qRegisterMetaType<PointerContainer<firebase::auth::Auth>>();
+}

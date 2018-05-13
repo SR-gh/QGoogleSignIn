@@ -16,6 +16,7 @@ public:
     Q_INVOKABLE void signOut();
     Q_INVOKABLE void signInWithEmail(QString email, QString password);
     Q_INVOKABLE void signUpWithEmail(QString email, QString password);
+    Q_INVOKABLE void signInAnonymously();
 signals:
 
 public slots:
