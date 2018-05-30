@@ -59,7 +59,7 @@ HEADERS += \
     helper.h
 
 # Firebase
-QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.4.1
+QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.5.1
 
 isEmpty(QTFIREBASE_SDK_PATH) {
     warning("Please set QTFIREBASE_SDK_PATH to the Firebase SDK path")

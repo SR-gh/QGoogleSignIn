@@ -90,7 +90,7 @@ signals:
     void firebaseAuthLinkFailed(int errorCode, QString errorMessage);
     // emitted on initialization completion. Any call to a function of a QFirebase instance
     // before obtaining a successful result from this signal has undefined behaviour.
-    void firebaseInitializationComplete(firebase::InitResult result);
+    void firebaseInitializationCompleted(firebase::InitResult result);
     // Reemitted from Firebase
     void authStateChanged(PointerContainer<firebase::auth::Auth>);
     void idTokenChanged(PointerContainer<firebase::auth::Auth>);
@@ -98,7 +98,7 @@ signals:
 private:
     void linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType);
 private:
-    void onFirebaseInitializationComplete(firebase::InitResult result);
+    void whenFirebaseInitializationCompletes(firebase::InitResult result);
 private:
     //Firebase
     QAndroidJniEnvironment m_qjniEnv;

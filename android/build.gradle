@@ -5,7 +5,8 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
-        classpath 'com.google.gms:google-services:3.2.0' // google-services plugin
+        //classpath 'com.google.gms:google-services:3.2.0' // google-services plugin Firebase 4.4.1
+        classpath 'com.google.gms:google-services:4.0.1' // google-services plugin Firebase 4.5.1
 
     }
 }
@@ -23,12 +24,13 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.google.firebase:firebase-core:11.8.0'
-    compile 'com.google.android.gms:play-services-auth:11.8.0'
+    // Google Sign-in
+    compile 'com.google.firebase:firebase-core:15.0.2' // Analytics, 4.5.1
+    compile 'com.google.android.gms:play-services-auth:15.0.1'
 
     // Firebase
-    compile 'com.google.firebase:firebase-auth:11.8.0'
-    compile 'com.google.android.gms:play-services-base:11.8.0'
+    compile 'com.google.firebase:firebase-auth:15.1.0'  // 4.5.1
+    compile 'com.google.android.gms:play-services-base:15.0.1'  // 4.5.1
 
     // Getting a "Could not find" error? Make sure you have
     // added the Google maven respository to your root build.gradle

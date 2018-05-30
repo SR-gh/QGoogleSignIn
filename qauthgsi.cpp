@@ -84,7 +84,7 @@ void QAuthGSI::signIn(bool silently)
         {
             emit failedRefresh(ERROR_UNKNOWN, silently);   // implement any behaviour
         }
-        else if (WAIT_FOR_ASYNC_ANSWER.compare(tokenId))
+        else if (0 == WAIT_FOR_ASYNC_ANSWER.compare(tokenId))
         {
             // must do nothing : treated in a callback
         }

@@ -21,7 +21,7 @@ void QGoogleSignInApplication::init()
     connect(this, &QGoogleSignInApplication::applicationStateChanged, this, &QGoogleSignInApplication::onApplicationStateChanged);
     // Firebase handling
     // auth
-    connect(qFirebase, &QFirebase::firebaseInitializationComplete, this, &QGoogleSignInApplication::onFirebaseInitializationComplete);
+    connect(qFirebase, &QFirebase::firebaseInitializationCompleted, this, &QGoogleSignInApplication::onFirebaseInitializationComplete);
     connect(qFirebase, &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
     connect(qFirebase, &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
     connect(qFirebase, &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
@@ -144,6 +144,7 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
 
 void QGoogleSignInApplication::onGsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason)
 {
+    qInfo() << "onGsiTokenReceived(reason=" << (QAuthGSI::GSIJavaIntent::QGSI_SIGN_IN == reason? "QGSI_SIGN_IN" : "QGSI_GET_TOKEN") << ")";
     if (QAuthGSI::GSIJavaIntent::QGSI_SIGN_IN == reason)
         qFirebase->signInWithGSI(tokenId);
     else
@@ -158,6 +159,7 @@ void QGoogleSignInApplication::onGsiTokenRequestFailed(int resultCode, QSharedPo
 void QGoogleSignInApplication::onFailedRefresh(int statusCode, bool silently)
 {
     (void) statusCode;
+    qInfo() << "onFailedRefresh(statusCode=" << statusCode << ")";
     // TODO : application state is in our Firebase user (tbd)
     // so, we do not have to transmit more state. I think. I believe. I guess. I don't know.
     if (!silently)

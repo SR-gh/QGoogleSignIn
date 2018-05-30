@@ -36,7 +36,7 @@ void QFirebase::init()
                                 myThis->m_firebaseAuth = firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get());
                                 ::firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get(), &init_result);
                                 qInfo() << "Finished FB init with result=" << init_result;
-                                myThis->onFirebaseInitializationComplete(init_result);
+                                myThis->whenFirebaseInitializationCompletes(init_result);
                                 return init_result;
     });
 }
@@ -206,12 +206,12 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
     context);
 }
 
-void QFirebase::onFirebaseInitializationComplete(firebase::InitResult result)
+void QFirebase::whenFirebaseInitializationCompletes(firebase::InitResult result)
 {
     qInfo() << "Registering Firebase auth listeners";
     m_firebaseAuth->AddAuthStateListener(firebaseAuthListener.get());
     m_firebaseAuth->AddIdTokenListener(firebaseAuthListener.get());
-    emit firebaseInitializationComplete(result);
+    emit firebaseInitializationCompleted(result);
 }
 
 
@@ -221,11 +221,32 @@ QFirebase::QFirebaseAuthListener::QFirebaseAuthListener(QFirebase *caller) : cal
 
 void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *auth)
 {
+
+    qInfo() << "QFirebaseAuthListener::OnAuthStateChanged";
+    firebase::auth::User* user = auth->current_user();
+    if (user != nullptr)
+    {
+        qInfo() << "Auth state changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str() << user->provider_id().c_str();
+    }
+    else
+    {
+        qInfo() << "Auth state : logout.";
+    }
     emit caller->authStateChanged(PointerContainer<firebase::auth::Auth>(auth));
 }
 
 void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
 {
+    qInfo() << "QFirebaseAuthListener::OnIdTokenChanged";
+    firebase::auth::User* user = auth->current_user();
+    if (user != nullptr)
+    {
+        qInfo() << "IdToken changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str() << user->provider_id().c_str();
+    }
+    else
+    {
+        qInfo() << "IdToken : logout.";
+    }
     emit caller->idTokenChanged(PointerContainer<firebase::auth::Auth>(auth));
 }
 
