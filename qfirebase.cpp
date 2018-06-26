@@ -9,7 +9,8 @@
 const QFirebase::QFirebaseRegisterer QFirebase::registerer;
 
 QFirebase::QFirebase(QObject *parent) : QObject(parent),
-    firebaseAuthListener(std::make_unique<QFirebaseAuthListener>(this))
+    firebaseAuthListener(std::make_unique<QFirebaseAuthListener>(this)),
+    firebaseAuthTokenListener(std::make_unique<QFirebaseAuthListener>(this))
 {
 }
 
@@ -210,7 +211,7 @@ void QFirebase::whenFirebaseInitializationCompletes(firebase::InitResult result)
 {
     qInfo() << "Registering Firebase auth listeners";
     m_firebaseAuth->AddAuthStateListener(firebaseAuthListener.get());
-    m_firebaseAuth->AddIdTokenListener(firebaseAuthListener.get());
+    m_firebaseAuth->AddIdTokenListener(firebaseAuthTokenListener.get());
     emit firebaseInitializationCompleted(result);
 }
 
@@ -233,6 +234,8 @@ void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *
         qInfo() << "Auth state : logout.";
     }
     emit caller->authStateChanged(PointerContainer<firebase::auth::Auth>(auth));
+    // Warning : cannot use auth asynchonously in a signal.
+    // either the caller constructs a state change handler and give it to QFirebase or
 }
 
 void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
@@ -242,6 +245,8 @@ void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *au
     if (user != nullptr)
     {
         qInfo() << "IdToken changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str() << user->provider_id().c_str();
+        for (firebase::auth::UserInfoInterface* v : user->provider_data())
+            qInfo() << v->provider_id().c_str() << v->uid().c_str();
     }
     else
     {

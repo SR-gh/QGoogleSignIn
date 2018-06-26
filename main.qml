@@ -13,12 +13,15 @@ Window
     {
         spacing: aButton.height/4
         anchors.horizontalCenter: parent.horizontalCenter
-        Button
+        GSIButton
         {
-            id:aButton
-            text: qsTr("Sign In with GSI")
-            onPressed: ctrlMain.signInWithGSI()
-            enabled: theApp.applicationInitialized
+           height: aButton.height
+           MouseArea
+           {
+               anchors.fill: parent
+               onPressed: ctrlMain.signInWithGSI()
+               enabled: theApp.applicationInitialized
+           }
         }
         TextField
         {
@@ -51,6 +54,7 @@ Window
         }
         Button
         {
+            id:aButton
             text: qsTr("Sign In anonymously")
             onPressed: ctrlMain.signInAnonymously()
             enabled: theApp.applicationInitialized
@@ -63,7 +67,27 @@ Window
         }
         Label
         {
-            text: qsTr("Signed")
+            text: theApp.user.signedIn ? qsTr("Signed In") : qsTr("Signed Out")
         }
+        Column
+        {
+            visible: theApp.user.signedIn
+
+            Row
+            {
+                Label { text: qsTr("User name :") }
+                Label { text: theApp.user.name }
+            }
+            Row
+            {
+                Label { text: qsTr("Email :") }
+                Label { text: theApp.user.email }
+            }
+            Image
+            {
+                source: theApp.user.url
+            }
+        }
+
     }
 }

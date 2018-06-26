@@ -1,4 +1,4 @@
-QT += quick androidextras
+QT += quick androidextras svg
 CONFIG += c++14
 
 # The following define makes your compiler emit warnings if you use
@@ -19,7 +19,8 @@ SOURCES += main.cpp \
     qfirebase.cpp \
     qauthgsi.cpp \
     qgsijnicallbacks.cpp \
-    androidhelper.cpp
+    androidhelper.cpp \
+    quser.cpp
 
 RESOURCES += qml.qrc
 
@@ -56,7 +57,8 @@ HEADERS += \
     qfirebase.h \
     qauthgsi.h \
     androidhelper.h \
-    helper.h
+    helper.h \
+    quser.h
 
 # Firebase
 QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.5.1

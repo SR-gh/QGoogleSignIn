@@ -6,6 +6,7 @@
 
 #include "qfirebase.h"
 #include "qauthgsi.h"
+#include "quser.h"
 
 //#include <QAndroidActivityResultReceiver>
 
@@ -29,6 +30,7 @@ class QGoogleSignInApplication : public QGuiApplication
     Q_OBJECT
 public:
     Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
+    Q_PROPERTY(QUser* user READ getUser WRITE setUser CONSTANT)
 
 public:
 #ifdef Q_QDOC
@@ -54,6 +56,11 @@ public:
     const QList<Controller*>& getControllers() const { return controllers; }
 
     void setHandlingActivityResult(bool value);
+
+    // proprerty-related
+    const QUser *getUser() const;
+    QUser *getUser();
+    void setUser(QUser *user);
 
 signals:
     //    // FB
@@ -90,6 +97,8 @@ private:
     bool handlingActivityResult = false;    // this flag to handle the case when app respawns and handles both onActivityResult AND onApplicationStateChanged. Only one signin should be attempted.
 
     QList<Controller*> controllers;
+
+    QUser m_user;
 };
 
 #endif // QGOOGLESIGNINAPPLICATION_H

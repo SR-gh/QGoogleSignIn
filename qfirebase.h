@@ -19,6 +19,7 @@ class QFirebase : public QObject
         QFirebase * caller;
     public:
         explicit QFirebaseAuthListener(QFirebase* caller);
+        ~QFirebaseAuthListener() override=default;
         void OnAuthStateChanged(firebase::auth::Auth* auth) override;
         void OnIdTokenChanged(firebase::auth::Auth* auth) override;
     };
@@ -31,6 +32,7 @@ class QFirebase : public QObject
     static const QFirebaseRegisterer registerer;
 public:
     explicit QFirebase(QObject *parent);
+    ~QFirebase() override=default;
 
     enum AuthType
     {
@@ -105,6 +107,7 @@ private:
     std::unique_ptr<firebase::App> m_firebaseApp; // must be deleted before m_qjniEnv, hence order of declaration matters.
     firebase::auth::Auth* m_firebaseAuth = nullptr; // non owning
     std::unique_ptr<QFirebaseAuthListener> firebaseAuthListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
+    std::unique_ptr<QFirebaseAuthListener> firebaseAuthTokenListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
 };
 Q_DECLARE_METATYPE(PointerContainer<firebase::auth::Auth>)
 

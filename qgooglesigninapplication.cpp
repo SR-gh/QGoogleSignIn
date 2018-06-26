@@ -188,6 +188,8 @@ void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user,
     firebase::auth::User * authUser = qFirebase->getUser();
     const std::string authProviderId = authUser->provider_id();
     qInfo() << "authProviderId=" << authProviderId.c_str();
+    for (firebase::auth::UserInfoInterface* v : authUser->provider_data())
+        qInfo() << v->provider_id().c_str() << v->uid().c_str();
     qInfo() << "The user is" << (authUser->is_anonymous() ? "" : "not") << "anonymously signed in.";
     // Where is firebase::auth::GoogleAuthProvider::PROVIDER_ID ??? Am I going to JNI a constant ?
 //    if (providerId == "google.com")
@@ -235,10 +237,15 @@ void QGoogleSignInApplication::onAuthStateChanged(PointerContainer<firebase::aut
     if (user != nullptr)
     {
         qInfo() << "Auth state changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
+        m_user.setSignedIn(true);
+        m_user.setEmail(user->email().c_str());
+        m_user.setName(user->display_name().c_str());
+        m_user.setUrl(user->photo_url().c_str());
     }
     else
     {
         qInfo() << "Auth state : logout.";
+        m_user = QUser();
     }
 }
 
@@ -250,10 +257,15 @@ void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth:
     if (user != nullptr)
     {
         qInfo() << "IdToken changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
+        m_user.setSignedIn(true);
+        m_user.setEmail(user->email().c_str());
+        m_user.setName(user->display_name().c_str());
+        m_user.setUrl(user->photo_url().c_str());
     }
     else
     {
         qInfo() << "IdToken : logout.";
+        m_user = QUser();
     }
 }
 
@@ -268,6 +280,24 @@ void QGoogleSignInApplication::setFirebaseInitialized(bool b)
     firebaseInitialized = b;
     if (changed)
         emit applicationInitializedChanged(isFirebaseInitialized());
+}
+
+const QUser *QGoogleSignInApplication::getUser() const
+{
+    return &m_user;
+}
+
+QUser *QGoogleSignInApplication::getUser()
+{
+    return &m_user;
+}
+
+void QGoogleSignInApplication::setUser(QUser *user)
+{
+    if (nullptr == user)
+        m_user = QUser();
+    else
+        m_user = *user;
 }
 
 void QGoogleSignInApplication::setHandlingActivityResult(bool value)

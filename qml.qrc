@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>GSIButton.qml</file>
+        <file>img/g_icon.svg</file>
     </qresource>
 </RCC>
