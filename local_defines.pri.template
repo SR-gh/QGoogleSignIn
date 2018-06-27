@@ -1,11 +1,11 @@
-# local_defines.pri.local
+# local_defines.pri.template
 #
 # This file is used as a property file template.
 # It should be copied as local_defines.pri in order to parametrize
 # the project for building.
 #
 # local_defines.pri must not be committed to version control.
-# local_defines.pri.local should be inspected any time it is updated,
+# local_defines.pri.template should be inspected any time it is updated,
 # in order to apply needed changes to local_defines.pri
 
 LOCAL_QML_IMPORT_PATH=D:/Qt/5.10.1
