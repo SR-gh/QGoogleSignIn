@@ -25,7 +25,8 @@ SOURCES += main.cpp \
 RESOURCES += qml.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH = D:/Qt/5.10.1
+# MODIFY this value according to your configuration
+QML_IMPORT_PATH = c:/Qt/5.10.1
 
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =
@@ -61,29 +62,37 @@ HEADERS += \
     quser.h
 
 # Firebase
-QTFIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_4.5.1
+# MODIFY this value according to your configuration
+FIREBASE_VERSION=5.1.0
+# MODIFY this value according to your configuration
+FIREBASE_SDK_PATH=D:/firebase_cpp_sdk_5.1.0
 
-isEmpty(QTFIREBASE_SDK_PATH) {
-    warning("Please set QTFIREBASE_SDK_PATH to the Firebase SDK path")
+isEmpty(FIREBASE_SDK_PATH) {
+    warning("Please set FIREBASE_SDK_PATH to the Firebase SDK path")
+}
+
+LIBRARY_INFIX=""
+versionAtLeast(FIREBASE_VERSION, 5) {
+LIBRARY_INFIX="firebase_"
 }
 
 INCLUDEPATH += \
-    $$QTFIREBASE_SDK_PATH/include \
+    $$FIREBASE_SDK_PATH/include \
     \
 
 # NOTE the order of linking is important!
 android {
-    QTFIREBASE_SDK_LIBS_PATH = $$QTFIREBASE_SDK_PATH/libs/android/$$ANDROID_TARGET_ARCH/gnustl
-    DEPENDPATH += $$QTFIREBASE_SDK_LIBS_PATH
+    FIREBASE_SDK_LIBS_PATH = $$FIREBASE_SDK_PATH/libs/android/$$ANDROID_TARGET_ARCH/gnustl
+    DEPENDPATH += $$FIREBASE_SDK_LIBS_PATH
 }
 
 # Firebase common
-PRE_TARGETDEPS += $$QTFIREBASE_SDK_LIBS_PATH/libapp.a
-LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lapp
+PRE_TARGETDEPS += $$FIREBASE_SDK_LIBS_PATH/lib$${LIBRARY_INFIX}app.a
+LIBS += -L$$FIREBASE_SDK_LIBS_PATH -l$${LIBRARY_INFIX}app
 
 # Firebase auth
-PRE_TARGETDEPS += $$QTFIREBASE_SDK_LIBS_PATH/libauth.a
-LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lauth
+PRE_TARGETDEPS += $$FIREBASE_SDK_LIBS_PATH/lib$${LIBRARY_INFIX}auth.a
+LIBS += -L$$FIREBASE_SDK_LIBS_PATH -l$${LIBRARY_INFIX}auth
 
-# Once again (je ne sais pas si c'est obligatoire, mais ça ne fait pas de mal)
-LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -lapp
+# Once again (only needed when having xref libraries)
+#LIBS += -L$$FIREBASE_SDK_LIBS_PATH -l$${LIBRARY_INFIX}app

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    engine.rootContext()->setContextProperty("theApp", (QObject*) &app);
+    engine.rootContext()->setContextProperty("theApp", &app);
     for (Controller* controller : app.getControllers())
     {
         engine.rootContext()->setContextProperty(controller->getName(), controller->asQObject());
