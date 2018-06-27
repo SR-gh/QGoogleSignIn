@@ -24,9 +24,12 @@ SOURCES += main.cpp \
 
 RESOURCES += qml.qrc
 
+# Locally defined variables.
+include(local_defines.pri)
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 # MODIFY this value according to your configuration
-QML_IMPORT_PATH = c:/Qt/5.10.1
+QML_IMPORT_PATH = $${LOCAL_QML_IMPORT_PATH}
 
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =
@@ -63,9 +66,9 @@ HEADERS += \
 
 # Firebase
 # MODIFY this value according to your configuration
-FIREBASE_VERSION=5.1.0
+FIREBASE_VERSION=$${LOCAL_FIREBASE_VERSION}
 # MODIFY this value according to your configuration
-FIREBASE_SDK_PATH=D:/firebase_cpp_sdk_5.1.0
+FIREBASE_SDK_PATH=$${LOCAL_FIREBASE_SDK_PATH}
 
 isEmpty(FIREBASE_SDK_PATH) {
     warning("Please set FIREBASE_SDK_PATH to the Firebase SDK path")
