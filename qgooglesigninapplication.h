@@ -30,7 +30,7 @@ class QGoogleSignInApplication : public QGuiApplication
     Q_OBJECT
 public:
     Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
-    Q_PROPERTY(QUser* user READ getUser WRITE setUser CONSTANT)
+    Q_PROPERTY(QUser* user READ getUser)
 
 public:
 #ifdef Q_QDOC
@@ -68,7 +68,7 @@ signals:
 //    void firebaseAuthFailed(int errorCode, QString errorMessage);
     void error(const QString errorMessage);
     void applicationInitializedChanged(bool);
-
+    void userChanged();
 private:
     Q_DISABLE_COPY(QGoogleSignInApplication)
     void onApplicationStateChanged(Qt::ApplicationState state);
@@ -80,6 +80,7 @@ private:
     void onFirebaseAuthSucceed(firebase::auth::User* user, int authType); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
     void onFirebaseAuthFailed(int errorCode, QString errorMessage);
     void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
+    void onFirebaseAuthLinkFailed(int errorCode, QString errorMessage);
     void onFirebaseInitializationComplete(firebase::InitResult result);
 
     void onAuthStateChanged(PointerContainer<firebase::auth::Auth>);

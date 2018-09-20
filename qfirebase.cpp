@@ -199,7 +199,7 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
             }
             else
             {
-                qInfo() << " Failed to link user with error : no=" << result.error() << " message=" << result.error_message();
+                qInfo() << " Failed to link user with error : no=" << result.error() << " message=" << result.error_message() << " thread_id=" /*<< thread()->*/;
                 emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkFailed(result.error(), result.error_message());
             }
             delete contextDataLambda;

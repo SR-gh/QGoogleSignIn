@@ -13,8 +13,8 @@ public:
     Q_PROPERTY(QString url READ getUrl WRITE setUrl NOTIFY urlChanged)
 
     explicit QUser(QObject *parent = nullptr);
-    QUser(const QUser &)=default;
-    QUser& operator=(const QUser &); // not default
+//    QUser(const QUser &);   // WTF : why is this default and not operator=() ? It should be, using QObject(const QObject&) constructor. Hum not possible : what am I doing wrong, again ?
+//    QUser& operator=(const QUser &); // not default
     ~QUser() override=default;
 
     bool getSignedIn() const;
@@ -25,6 +25,8 @@ public:
     void setName(const QString &value);
     QString getUrl() const;
     void setUrl(const QString &value);
+
+    void clear();
 
 private:
     // Meta-type registering

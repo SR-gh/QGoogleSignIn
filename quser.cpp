@@ -8,17 +8,29 @@ QUser::QUser(QObject *parent) : QObject(parent)
 
 }
 
-QUser &QUser::operator=(const QUser &u)
-{
-    if (&u != this)
-    {
-        setSignedIn(u.getSignedIn());
-        setEmail(u.getEmail());
-        setName(u.getName());
-        setUrl(u.getUrl());
-    }
-    return *this;
-}
+//QUser::QUser(const QUser &u) : QObject (u)
+//{
+//    if (&u != this)
+//    {
+//        setSignedIn(u.getSignedIn());
+//        setEmail(u.getEmail());
+//        setName(u.getName());
+//        setUrl(u.getUrl());
+//    }
+//    return *this;
+//}
+
+//QUser &QUser::operator=(const QUser &u)
+//{
+//    if (&u != this)
+//    {
+//        setSignedIn(u.getSignedIn());
+//        setEmail(u.getEmail());
+//        setName(u.getName());
+//        setUrl(u.getUrl());
+//    }
+//    return *this;
+//}
 
 bool QUser::getSignedIn() const
 {
@@ -78,6 +90,14 @@ void QUser::setUrl(const QString &value)
         url = value;
         emit urlChanged();
     }
+}
+
+void QUser::clear()
+{
+    isSigned = false;
+    email.clear();
+    name.clear();
+    url.clear();
 }
 
 QUser::QUserRegisterer::QUserRegisterer()

@@ -25,6 +25,7 @@ void QGoogleSignInApplication::init()
     connect(qFirebase, &QFirebase::firebaseAuthSucceed, this, &QGoogleSignInApplication::onFirebaseAuthSucceed);
     connect(qFirebase, &QFirebase::firebaseAuthFailed, this, &QGoogleSignInApplication::onFirebaseAuthFailed);
     connect(qFirebase, &QFirebase::firebaseAuthLinkSucceed, this, &QGoogleSignInApplication::onFirebaseAuthLinkSucceed);
+    connect(qFirebase, &QFirebase::firebaseAuthLinkFailed, this, &QGoogleSignInApplication::onFirebaseAuthLinkFailed);
     connect(qFirebase, &QFirebase::authStateChanged, this, &QGoogleSignInApplication::onAuthStateChanged);
     connect(qFirebase, &QFirebase::idTokenChanged, this, &QGoogleSignInApplication::onIdTokenChanged);
 
@@ -224,6 +225,14 @@ void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *u
         lastSuccessfulAuthType = authType;
 }
 
+void QGoogleSignInApplication::onFirebaseAuthLinkFailed(int errorCode, QString errorMessage)
+{
+    (void) errorCode;
+    qInfo() << "User could not link an account to their Firebase account. You should handle this signal.";
+    // Example of error reporting
+    emit error(errorMessage);
+}
+
 void QGoogleSignInApplication::onFirebaseInitializationComplete(firebase::InitResult result)
 {
     setFirebaseInitialized(0 == result);
@@ -245,7 +254,8 @@ void QGoogleSignInApplication::onAuthStateChanged(PointerContainer<firebase::aut
     else
     {
         qInfo() << "Auth state : logout.";
-        m_user = QUser();
+//        m_user = QUser();
+        m_user.clear();
     }
 }
 
@@ -265,7 +275,8 @@ void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth:
     else
     {
         qInfo() << "IdToken : logout.";
-        m_user = QUser();
+//        m_user = QUser();
+        m_user.clear();
     }
 }
 
@@ -294,10 +305,24 @@ QUser *QGoogleSignInApplication::getUser()
 
 void QGoogleSignInApplication::setUser(QUser *user)
 {
+//    const QUser& tmpUser = ((nullptr == user) ? QUser() : *user);
+//    if
+//    {
+
+//        if (tmpUser != m_user)
+//        m_user = QUser();
+//    }
+//    else
+//        m_user = *user;
     if (nullptr == user)
-        m_user = QUser();
+        m_user.clear();
     else
-        m_user = *user;
+    {
+        m_user.setSignedIn(user->getSignedIn());
+        m_user.setEmail(user->getEmail());
+        m_user.setName(user->getName());
+        m_user.setUrl(user->getUrl());
+    }
 }
 
 void QGoogleSignInApplication::setHandlingActivityResult(bool value)
