@@ -194,31 +194,31 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
         user->ReauthenticateAndRetrieveData(credential);      //#8
     auto contextData = new std::tuple<decltype(this), decltype(authType)> {this, authType};
     void * context = contextData;
-//    result.OnCompletion(
-//                [](const firebase::Future<firebase::auth::User *>& result, void* user_data)
-////#8                [](const firebase::Future<firebase::auth::SignInResult>& result, void* user_data)
-//        {
-//            //std::tuple<typeof(this), typeof(authType)> * contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
-//            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
-//            if (result.error() == firebase::auth::kAuthErrorNone)
-//            {
-//                firebase::auth::User* user = *result.result();
-////#8                const firebase::auth::SignInResult& sir = *result.result();
-////#8                firebase::auth::User* user = sir.user;
-//                qInfo() << " Linked user : " << user->uid().c_str() << " " << user->display_name().c_str();
+    result.OnCompletion(
+//                [](const firebase::Future<firebase::auth::User *>& result, void* user_data) //#8
+                [](const firebase::Future<firebase::auth::SignInResult>& result, void* user_data)
+        {
+            //std::tuple<typeof(this), typeof(authType)> * contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
+            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
+            if (result.error() == firebase::auth::kAuthErrorNone)
+            {
+//                firebase::auth::User* user = *result.result();    //#8
+                const firebase::auth::SignInResult& sir = *result.result();
+                firebase::auth::User* user = sir.user;
+                qInfo() << " Linked user : " << user->uid().c_str() << " " << user->display_name().c_str();
 
-//                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkSucceed(user, int(std::get<1>(*contextDataLambda)));
-//            }
-//            else
-//            {
-////#7                std::ostringstream oss;
-////#7                oss << std::this_thread::get_id();
-//                qInfo() << " Failed to link user with error : no=" << result.error() << " message=" << result.error_message() << " thread_id=" /*#7 << oss.str().c_str()*/;
-//                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkFailed(result.error(), result.error_message());
-//            }
-//            delete contextDataLambda;
-//        },
-//    context);
+                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkSucceed(user, int(std::get<1>(*contextDataLambda)));
+            }
+            else
+            {
+//#7                std::ostringstream oss;
+//#7                oss << std::this_thread::get_id();
+                qInfo() << " Failed to link user with error : no=" << result.error() << " message=" << result.error_message() << " thread_id=" /*#7 << oss.str().c_str()*/;
+                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkFailed(result.error(), result.error_message());
+            }
+            delete contextDataLambda;
+        },
+    context);
 }
 
 void QFirebase::whenFirebaseInitializationCompletes(firebase::InitResult result)
