@@ -187,22 +187,17 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
 //#7    oss << std::this_thread::get_id();
 //#7    qInfo() << " Before call, thread_id=" << oss.str().c_str();
 
-    // Issue #8 : replace LinkWithCredential() with ReauthenticateAndRetrieveData() causes a crash !
-//    firebase::Future<firebase::auth::User*> result =
-//        user->LinkWithCredential(credential);
-    firebase::Future<firebase::auth::SignInResult> result =   //#8
-        user->ReauthenticateAndRetrieveData(credential);      //#8
+    firebase::Future<firebase::auth::SignInResult> result =
+        user->ReauthenticateAndRetrieveData(credential);
     auto contextData = new std::tuple<decltype(this), decltype(authType)> {this, authType};
     void * context = contextData;
     result.OnCompletion(
-//                [](const firebase::Future<firebase::auth::User *>& result, void* user_data) //#8
                 [](const firebase::Future<firebase::auth::SignInResult>& result, void* user_data)
         {
             //std::tuple<typeof(this), typeof(authType)> * contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
             decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
             if (result.error() == firebase::auth::kAuthErrorNone)
             {
-//                firebase::auth::User* user = *result.result();    //#8
                 const firebase::auth::SignInResult& sir = *result.result();
                 firebase::auth::User* user = sir.user;
                 qInfo() << " Linked user : " << user->uid().c_str() << " " << user->display_name().c_str();
