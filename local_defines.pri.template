@@ -8,7 +8,7 @@
 # local_defines.pri.template should be inspected any time it is updated,
 # in order to apply needed changes to local_defines.pri
 
-LOCAL_QML_IMPORT_PATH=D:/Qt/5.10.1
-LOCAL_FIREBASE_VERSION=5.1.0
-LOCAL_FIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_5.1.0
+LOCAL_QML_IMPORT_PATH=D:/Qt/5.11.1
+LOCAL_FIREBASE_VERSION=5.3.0
+LOCAL_FIREBASE_SDK_PATH=D:/Android/firebase_cpp_sdk_5.3.0
 
