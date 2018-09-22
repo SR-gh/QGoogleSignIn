@@ -6,8 +6,8 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
         //classpath 'com.google.gms:google-services:3.2.0' // google-services plugin Firebase 4.4.1
-        classpath 'com.google.gms:google-services:4.0.1' // google-services plugin Firebase 5.1.0
-        //classpath 'com.google.gms:google-services:4.1.0' // google-services plugin Firebase 5.3.0 (not sure that version upgrade is required)
+        //classpath 'com.google.gms:google-services:4.0.1' // google-services plugin Firebase 5.1.0
+        classpath 'com.google.gms:google-services:4.1.0' // google-services plugin Firebase 5.3.0 (not sure that version upgrade is required)
 
     }
 }
