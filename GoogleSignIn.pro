@@ -62,7 +62,8 @@ HEADERS += \
     qauthgsi.h \
     androidhelper.h \
     helper.h \
-    quser.h
+    quser.h \
+    androidmessagehandler.h
 
 # Firebase
 # MODIFY this value according to your configuration

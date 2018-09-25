@@ -99,6 +99,7 @@ signals:
 
 private:
     void linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType);
+    void signInWithCredentials(firebase::auth::Credential& credential);
 private:
     void whenFirebaseInitializationCompletes(firebase::InitResult result);
 private:

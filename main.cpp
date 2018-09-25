@@ -3,8 +3,13 @@
 #include "qgooglesigninapplication.h"
 #include "controller.h"
 #include <QQmlContext>
+#include "androidmessagehandler.h"
+
 int main(int argc, char *argv[])
 {
+#ifdef QGSILOG
+    qInstallMessageHandler(messageHandlerWithDateTime);
+#endif
 #if defined(Q_OS_WIN)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
