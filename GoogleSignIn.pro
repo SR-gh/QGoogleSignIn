@@ -100,3 +100,21 @@ LIBS += -L$$FIREBASE_SDK_LIBS_PATH -l$${LIBRARY_INFIX}auth
 
 # Once again (only needed when having xref libraries)
 #LIBS += -L$$FIREBASE_SDK_LIBS_PATH -l$${LIBRARY_INFIX}app
+
+# Clumsy optionnal OpenSSL library inclusion
+contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+    POTENTIAL_ANDROID_EXTRA_LIBS = "$$OPEN_SSL_LIBS_PATH/libssl.so" "$$OPEN_SSL_LIBS_PATH/libcrypto.so"
+    ACTUAL=true
+    for (file, POTENTIAL_ANDROID_EXTRA_LIBS) {
+        !exists($$file) {
+            message("$$file does not exist")
+            ACTUAL=false
+        }
+    }
+    if ($$ACTUAL) {
+            # This « solution » for Openssl warnings makes my App crash.
+            # Commented out until I find out why and can fix it.
+            #ANDROID_EXTRA_LIBS += $$POTENTIAL_ANDROID_EXTRA_LIBS
+            message("Using Android extra libs : $$ANDROID_EXTRA_LIBS")
+    }
+}
