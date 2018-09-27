@@ -10,7 +10,7 @@
 #include <QDateTime>
 void messageHandlerWithDateTime(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QDateTime now;
+    QDateTime now = QDateTime::currentDateTime();
     QString formattedMessage = qFormatLogMessage(type, context, msg);
 
     android_LogPriority priority = ANDROID_LOG_DEBUG;
@@ -26,7 +26,7 @@ void messageHandlerWithDateTime(QtMsgType type, const QMessageLogContext &contex
 
     std::ostringstream oss;
     oss << std::showbase << std::hex << std::this_thread::get_id();
-    __android_log_print(priority, qPrintable(now.toString("[%Y%m%d;%H%M%S] ")+QCoreApplication::applicationName()),
+    __android_log_print(priority, qPrintable(now.toString("[yyyy/MM/dd;HH:mm:ss.zzz] ")+QCoreApplication::applicationName()),
                         "[%s] %s:%d (%s): %s\n", oss.str().c_str(), context.file, context.line,
                         context.function, qPrintable(formattedMessage));
 }
