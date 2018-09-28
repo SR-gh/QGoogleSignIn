@@ -34,15 +34,6 @@ public:
     explicit QFirebase(QObject *parent);
     ~QFirebase() override=default;
 
-//    enum AuthType
-//    {
-//        UNDEFINED,      // When there is no known authentication type
-//        ANONYMOUS,      // Firebase Anonymous authentication
-//        GSI,            // Google Sign In authentication
-//        PASSWORD,       // login+password authentication
-//        NO_SIGN_IN,    // When no authentication is voluntarily used
-//    };
-
     // Interface
 
     // Must be called before any other function call to this instance.
@@ -86,10 +77,8 @@ public:
 
 signals:
     // FB
-//    void firebaseAuthSucceed(firebase::auth::User* user, int authType);
     void firebaseAuthSucceed(firebase::auth::User* user);
     void firebaseAuthFailed(int errorCode, QString errorMessage);
-//    void firebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
     void firebaseAuthLinkSucceed(firebase::auth::User* user);
     void firebaseAuthLinkFailed(int errorCode, QString errorMessage);
     // emitted on initialization completion. Any call to a function of a QFirebase instance
@@ -100,7 +89,6 @@ signals:
     void idTokenChanged(PointerContainer<firebase::auth::Auth>);
 
 private:
-//    void linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType);
     void linkWithCredentials(firebase::auth::Credential& credential);
     void signInWithCredentials(firebase::auth::Credential& credential);
 private:

@@ -183,7 +183,6 @@ firebase::auth::User *QFirebase::getUser()
     return m_firebaseAuth->current_user();
 }
 
-//void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType)
 void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
 {
     firebase::auth::User* user = getUser();
