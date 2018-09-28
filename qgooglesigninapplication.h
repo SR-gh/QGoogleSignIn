@@ -30,7 +30,7 @@ class QGoogleSignInApplication : public QGuiApplication
     Q_OBJECT
 public:
     Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
-    Q_PROPERTY(QUser* user READ getUser)
+    Q_PROPERTY(QUser* user READ getUser NOTIFY userChanged) // NOTIFY signal mandatory. See Issue #18.
 
 public:
 #ifdef Q_QDOC

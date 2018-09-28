@@ -204,26 +204,16 @@ void QGoogleSignInApplication::onFirebaseInitializationComplete(firebase::InitRe
 
 void QGoogleSignInApplication::onAuthStateChanged(PointerContainer<firebase::auth::Auth> pca)
 {
+    // We chose to handle state in onIdTokenChanged(), consequently
+    // we gently ignore this message.
     qInfo() << "Auth state changed.";
-    firebase::auth::Auth* auth = pca.getPtr();
-    firebase::auth::User* user = auth->current_user();
-    if (user != nullptr)
-    {
-        qInfo() << "Auth state changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
-        m_user.setSignedIn(true);
-        m_user.setEmail(user->email().c_str());
-        m_user.setName(user->display_name().c_str());
-        m_user.setUrl(user->photo_url().c_str());
-    }
-    else
-    {
-        qInfo() << "Auth state : logout.";
-        m_user.clear();
-    }
 }
 
 void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth::Auth> pca)
 {
+    // Could handle signaling from several auth objects, but doesn't in reality, as
+    // we have only a single user in this application right now, and a single auth
+    // object in the Firebase bridge implementation.
     qInfo() << "IdToken changed.";
     firebase::auth::Auth* auth = pca.getPtr();
     firebase::auth::User* user = auth->current_user();
