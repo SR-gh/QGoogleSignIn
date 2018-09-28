@@ -77,9 +77,11 @@ private:
     void onFailedRefresh(int statusCode, bool silently);
     void onSuccessfulSignOut();
 
-    void onFirebaseAuthSucceed(firebase::auth::User* user, int authType); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
+//    void onFirebaseAuthSucceed(firebase::auth::User* user, int authType); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
+    void onFirebaseAuthSucceed(firebase::auth::User* user); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
     void onFirebaseAuthFailed(int errorCode, QString errorMessage);
-    void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
+//    void onFirebaseAuthLinkSucceed(firebase::auth::User* user, int authType);
+    void onFirebaseAuthLinkSucceed(firebase::auth::User* user);
     void onFirebaseAuthLinkFailed(int errorCode, QString errorMessage);
     void onFirebaseInitializationComplete(firebase::InitResult result);
 
@@ -94,8 +96,8 @@ private:
     QAuthGSI* qAuthGSI = nullptr;     // child deletion.
 
     bool firebaseInitialized = false;
-    QFirebase::AuthType lastSuccessfulAuthType = QFirebase::AuthType::UNDEFINED;
-    bool handlingActivityResult = false;    // this flag to handle the case when app respawns and handles both onActivityResult AND onApplicationStateChanged. Only one signin should be attempted.
+//    QFirebase::AuthType lastSuccessfulAuthType = QFirebase::AuthType::UNDEFINED;
+//    bool handlingActivityResult = false;    // this flag to handle the case when app respawns and handles both onActivityResult AND onApplicationStateChanged. Only one signin should be attempted.
 
     QList<Controller*> controllers;
 

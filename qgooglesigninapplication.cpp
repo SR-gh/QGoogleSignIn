@@ -90,7 +90,7 @@ void QGoogleSignInApplication::signOut()
 {
     qFirebase->signOut();
     qAuthGSI->signOut();
-    lastSuccessfulAuthType = QFirebase::AuthType::UNDEFINED;
+//    lastSuccessfulAuthType = QFirebase::AuthType::UNDEFINED;
 }
 
 void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState state)
@@ -99,41 +99,42 @@ void QGoogleSignInApplication::onApplicationStateChanged(Qt::ApplicationState st
     {
     case Qt::ApplicationActive:
     {
-        qInfo() << "onApplicationStateChanged(ApplicationActive=" << state << "), handlingActivityResult=" << handlingActivityResult;
-        if (!handlingActivityResult) // flag to differentiate activity respawn after a result is received or after creation
-                                     // this is easier to treat in Java directly as the correct handler is called and not the other one (to check).
-                                     // The Qt way of dealing with application state makes it difficult to treat in C++ these cases.
-        {
-            QSettings settings;
-            lastSuccessfulAuthType = static_cast<QFirebase::AuthType>(settings.value("lastSuccessfulAuthType", QFirebase::AuthType::UNDEFINED).toInt());
-            switch (lastSuccessfulAuthType)
-            {
-            case QFirebase::AuthType::NO_SIGN_IN:
-            case QFirebase::AuthType::UNDEFINED:
-                break;
-            case QFirebase::AuthType::GSI:
-                // Sign In with GSI, silently
-                qAuthGSI->signIn(true);
-                break;
-            case QFirebase::AuthType::PASSWORD:
-                //signInWithEmail(WTF)
-                break;
-            case QFirebase::AuthType::ANONYMOUS:
-                // Sign Anonymously
-                signInAnonymously();
-                break;
-            default:
-                break;
-            }
-        }
-        handlingActivityResult = false; // reset for future respawns
+        qInfo() << "onApplicationStateChanged(ApplicationActive=" << state;// << "), handlingActivityResult=" << handlingActivityResult;
+        // Issue#11 : we do nothing at startup.
+//        if (!handlingActivityResult) // flag to differentiate activity respawn after a result is received or after creation
+//                                     // this is easier to treat in Java directly as the correct handler is called and not the other one (to check).
+//                                     // The Qt way of dealing with application state makes it difficult to treat in C++ these cases.
+//        {
+//            QSettings settings;
+//            lastSuccessfulAuthType = static_cast<QFirebase::AuthType>(settings.value("lastSuccessfulAuthType", QFirebase::AuthType::UNDEFINED).toInt());
+//            switch (lastSuccessfulAuthType)
+//            {
+//            case QFirebase::AuthType::NO_SIGN_IN:
+//            case QFirebase::AuthType::UNDEFINED:
+//                break;
+//            case QFirebase::AuthType::GSI:
+//                // Sign In with GSI, silently
+//                qAuthGSI->signIn(true);
+//                break;
+//            case QFirebase::AuthType::PASSWORD:
+//                //signInWithEmail(WTF)
+//                break;
+//            case QFirebase::AuthType::ANONYMOUS:
+//                // Sign Anonymously
+//                signInAnonymously();
+//                break;
+//            default:
+//                break;
+//            }
+//        }
+//        handlingActivityResult = false; // reset for future respawns
         break;
     }
     case Qt::ApplicationSuspended:
     {
         qInfo() << "onApplicationStateChanged(ApplicationSuspended=" << state << ")";
-        QSettings settings;
-        settings.setValue("lastSuccessfulAuthType", lastSuccessfulAuthType);
+//        QSettings settings;
+//        settings.setValue("lastSuccessfulAuthType", lastSuccessfulAuthType);
         break;
     }
     default:
@@ -179,9 +180,10 @@ void QGoogleSignInApplication::onSuccessfulSignOut()
     qInfo() << "User successfuly signed out of the application";
 }
 
-void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user, int p_authType)
+//void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user, int p_authType)
+void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user)
 {
-    QFirebase::AuthType authType = static_cast<QFirebase::AuthType>(p_authType);
+//    QFirebase::AuthType authType = static_cast<QFirebase::AuthType>(p_authType);
     qInfo() << "User successfuly signed in the application. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
     assert(user);
     const std::string providerId = user->provider_id();
@@ -205,7 +207,7 @@ void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user,
 //    {
 //        lastSuccessfulAuthType = AuthType::UNDEFINED;
 //    }
-    lastSuccessfulAuthType = authType;
+//    lastSuccessfulAuthType = authType;
 }
 
 void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString errorMessage)
@@ -216,13 +218,15 @@ void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString error
     emit error(errorMessage);
 }
 
-void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user, int p_authType)
+//void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user, int p_authType)
+void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user)
 {
     (void) user;
-    QFirebase::AuthType authType = static_cast<QFirebase::AuthType>(p_authType);
+//    (void) p_authType
+//    QFirebase::AuthType authType = static_cast<QFirebase::AuthType>(p_authType);
     qInfo() << "User successfuly linked an account to their Firebase account. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
-    if (QFirebase::AuthType::ANONYMOUS == lastSuccessfulAuthType || QFirebase::AuthType::UNDEFINED == lastSuccessfulAuthType)
-        lastSuccessfulAuthType = authType;
+//    if (QFirebase::AuthType::ANONYMOUS == lastSuccessfulAuthType || QFirebase::AuthType::UNDEFINED == lastSuccessfulAuthType)
+//        lastSuccessfulAuthType = authType;
 }
 
 void QGoogleSignInApplication::onFirebaseAuthLinkFailed(int errorCode, QString errorMessage)
@@ -325,7 +329,7 @@ void QGoogleSignInApplication::setUser(QUser *user)
     }
 }
 
-void QGoogleSignInApplication::setHandlingActivityResult(bool value)
-{
-    handlingActivityResult = value;
-}
+//void QGoogleSignInApplication::setHandlingActivityResult(bool value)
+//{
+//    handlingActivityResult = value;
+//}

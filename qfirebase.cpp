@@ -52,13 +52,17 @@ void QFirebase::signInWithGSI(QString tokenId)
 
 void QFirebase::signInWithCredentials(firebase::auth::Credential &credential)
 {
+    qInfo() << "Before SignInAndRetrieveDataWithCredential()";
     firebase::Future<firebase::auth::SignInResult> result =
         m_firebaseAuth->SignInAndRetrieveDataWithCredential(credential);
+    qInfo() << "After SignInAndRetrieveDataWithCredential(), before OnCompletion()";
 
-    void * context = this;
+    auto contextData = this;
+    void * context = contextData;
     result.OnCompletion(
                 [](const firebase::Future<firebase::auth::SignInResult>& result, void* user_data)
         {
+            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
             if (result.error() == firebase::auth::kAuthErrorNone)
             {
                 const firebase::auth::SignInResult& sir = *result.result();
@@ -71,7 +75,7 @@ void QFirebase::signInWithCredentials(firebase::auth::Credential &credential)
                     qInfo() << p.first.AsString().string_value() << p.second.AsString().string_value();
                 }
 
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthSucceed(user, int(QFirebase::AuthType::GSI));
+                emit contextDataLambda->firebaseAuthSucceed(user);
             }
             else
             {
@@ -81,10 +85,11 @@ void QFirebase::signInWithCredentials(firebase::auth::Credential &credential)
                 if (user)
                     uid = user->uid().c_str();
                 qInfo() << "Credentials Sign In. Authentication failed for" << uid << "with error : no=" << result.error() << "message=" << result.error_message();
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
+                emit contextDataLambda->firebaseAuthFailed(result.error(), result.error_message());
             }
         },
     context);
+    qInfo() << "After OnCompletion()";
 }
 
 void QFirebase::signInWithEmail(QString email, QString password)
@@ -101,21 +106,23 @@ void QFirebase::signUpWithEmail(QString email, QString password)
     firebase::Future<firebase::auth::User*> result =
         m_firebaseAuth->CreateUserWithEmailAndPassword(email.toUtf8().data(), password.toUtf8().data());
 
-    void * context = this;
+    auto contextData = this;
+    void * context = contextData;
     result.OnCompletion(
         [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
         {
+            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
             if (result.error() == firebase::auth::kAuthErrorNone)
             {
                 firebase::auth::User* user = *result.result();
                 qInfo() << "Firebase Email Created authenticated user :"  << user->uid().c_str() << user->display_name().c_str() << "(" << user->email().c_str() << ")";
 
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthSucceed(user, int(QFirebase::AuthType::PASSWORD));
+                emit contextDataLambda->firebaseAuthSucceed(user);
             }
             else
             {
                 qInfo() << "Firebase Email Created authentication failed with error : no=" << result.error() << "message=" << result.error_message();
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
+                emit contextDataLambda->firebaseAuthFailed(result.error(), result.error_message());
             }
         },
     context);
@@ -125,21 +132,23 @@ void QFirebase::signInAnonymously()
 {
     qInfo() << "Firebase Anonymous Sign In";
     firebase::Future<firebase::auth::User*> result = m_firebaseAuth->SignInAnonymously();
-    void * context = this;
+    auto contextData = this;
+    void * context = contextData;
     result.OnCompletion(
         [](const firebase::Future<firebase::auth::User*>& result, void* user_data)
         {
+            decltype(contextData) contextDataLambda = static_cast<decltype (contextDataLambda)>(user_data);
             if (result.error() == firebase::auth::kAuthErrorNone)
             {
                 firebase::auth::User* user = *result.result();
                 qInfo() << "Anonymous authenticated user :" << user->uid().c_str() << user->display_name().c_str();
 
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthSucceed(user, int(QFirebase::AuthType::ANONYMOUS));
+                emit contextDataLambda->firebaseAuthSucceed(user);
             }
             else
             {
                 qInfo() << "Anonymous authentication failed with error : no=" << result.error() << "message=" << result.error_message();
-                emit static_cast<QFirebase*>(user_data)->firebaseAuthFailed(result.error(), result.error_message());
+                emit contextDataLambda->firebaseAuthFailed(result.error(), result.error_message());
             }
         },
     context);
@@ -157,7 +166,7 @@ void QFirebase::linkWithGSI(QString tokenId)
 
     firebase::auth::Credential credential =
         firebase::auth::GoogleAuthProvider::GetCredential(tokenId.toUtf8().data(), nullptr);
-    linkWithCredentials(credential, QFirebase::AuthType::GSI);
+    linkWithCredentials(credential);
 }
 
 void QFirebase::linkWithEmail(QString email, QString password)
@@ -166,7 +175,7 @@ void QFirebase::linkWithEmail(QString email, QString password)
 
     firebase::auth::Credential credential =
         firebase::auth::EmailAuthProvider::GetCredential(email.toUtf8().data(), password.toUtf8().data());
-    linkWithCredentials(credential, QFirebase::AuthType::PASSWORD);
+    linkWithCredentials(credential);
 }
 
 firebase::auth::User *QFirebase::getUser()
@@ -174,7 +183,8 @@ firebase::auth::User *QFirebase::getUser()
     return m_firebaseAuth->current_user();
 }
 
-void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType)
+//void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFirebase::AuthType authType)
+void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
 {
     firebase::auth::User* user = getUser();
     if (!user)
@@ -182,7 +192,7 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
 
     firebase::Future<firebase::auth::SignInResult> result =
         user->LinkAndRetrieveDataWithCredential(credential);
-    auto contextData = new std::tuple<decltype(this), decltype(authType)> {this, authType};
+    auto contextData = this;
     void * context = contextData;
     result.OnCompletion(
                 [](const firebase::Future<firebase::auth::SignInResult>& result, void* user_data)
@@ -194,17 +204,17 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential, QFir
                 firebase::auth::User* user = sir.user;
                 qInfo() << "Linked user :" << user->uid().c_str() << user->display_name().c_str() << sir.info.provider_id.c_str();
 
-                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkSucceed(user, int(std::get<1>(*contextDataLambda)));
+                emit contextDataLambda->firebaseAuthLinkSucceed(user);
             }
             else
             {
                 const firebase::auth::SignInResult& sir = *result.result();
-                firebase::auth::User* user = std::get<0>(*contextDataLambda)->m_firebaseAuth->current_user();//sir.user;
+                firebase::auth::User* user = contextDataLambda->m_firebaseAuth->current_user();//sir.user;
                 QString uid;
                 if (user)
                     uid = user->uid().c_str();
                 qInfo() << "Failed to link user" << uid.toUtf8() << "with error : no=" << result.error() << "message=" << result.error_message();
-                emit static_cast<QFirebase*>(std::get<0>(*contextDataLambda))->firebaseAuthLinkFailed(result.error(), result.error_message());
+                emit contextDataLambda->firebaseAuthLinkFailed(result.error(), result.error_message());
             }
             delete contextDataLambda;
         },
@@ -226,6 +236,7 @@ QFirebase::QFirebaseAuthListener::QFirebaseAuthListener(QFirebase *caller) : cal
 
 void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *auth)
 {
+    // See comments in void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
     firebase::auth::User* user = auth->current_user();
     if (user != nullptr)
     {
@@ -236,12 +247,12 @@ void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *
         qInfo() << "Auth state : logout.";
     }
     emit caller->authStateChanged(PointerContainer<firebase::auth::Auth>(auth));
-    // Warning : cannot use auth asynchonously in a signal.
-    // either the caller constructs a state change handler and give it to QFirebase or
 }
 
 void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
 {
+    // We're in a Firebase thread. Use only const function on auth, as we're not
+    // aware that non const functions are thread safe. Const ones are supposed to be.
     firebase::auth::User* user = auth->current_user();
     if (user != nullptr)
     {
@@ -253,6 +264,8 @@ void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *au
     {
         qInfo() << "IdToken : logout.";
     }
+    // We can pass auth to slots.
+    // Application thread can take non const action on it.
     emit caller->idTokenChanged(PointerContainer<firebase::auth::Auth>(auth));
 }
 

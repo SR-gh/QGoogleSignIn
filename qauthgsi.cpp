@@ -27,12 +27,12 @@ void QAuthGSI::QGSIAARR::handleActivityResult(int receiverRequestCode, int resul
             qInfo() << tokenId;
             if (tokenId.size() > 0)
             {
-                // If we asked for a sign in, then we should not try
-                // to sign in concurrently when resuming the activity.
-                // If we just asked for a token, then the previous
-                // sign in mode may be attempted when resuming the activity.
-                if (QGSI_SIGN_IN == receiverRequestCode)
-                    qGoogleSignInApp->setHandlingActivityResult(true);
+//                // If we asked for a sign in, then we should not try
+//                // to sign in concurrently when resuming the activity.
+//                // If we just asked for a token, then the previous
+//                // sign in mode may be attempted when resuming the activity.
+//                if (QGSI_SIGN_IN == receiverRequestCode)
+//                    qGoogleSignInApp->setHandlingActivityResult(true);
                 emit caller->gsiTokenReceived(tokenId, static_cast<GSIJavaIntent>(receiverRequestCode));
             }
         }
