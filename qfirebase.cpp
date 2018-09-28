@@ -215,7 +215,6 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
                 qInfo() << "Failed to link user" << uid.toUtf8() << "with error : no=" << result.error() << "message=" << result.error_message();
                 emit contextDataLambda->firebaseAuthLinkFailed(result.error(), result.error_message());
             }
-            delete contextDataLambda;
         },
     context);
 }
