@@ -61,6 +61,12 @@ void QGoogleSignInApplication::signInWithGSI(bool silently)
 
 void QGoogleSignInApplication::signInWithEmail(QString email, QString password)
 {
+    if (!checkEmailAndPassword(email, password))
+    {
+        emit error("Incorrect email or password.");
+        return;
+    }
+
     firebase::auth::User* user = qFirebase->getUser();
     if (user)
     {
@@ -78,6 +84,12 @@ void QGoogleSignInApplication::signInWithEmail(QString email, QString password)
 
 void QGoogleSignInApplication::signUpWithEmail(QString email, QString password)
 {
+    if (!checkEmailAndPassword(email, password))
+    {
+        emit error("Incorrect email or password.");
+        return;
+    }
+
     qFirebase->signUpWithEmail(email, password);
 }
 
@@ -228,6 +240,13 @@ void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth:
         qInfo() << "IdToken : logout.";
         m_user.clear();
     }
+}
+
+bool QGoogleSignInApplication::checkEmailAndPassword(const QString &email, const QString &password)
+{
+    if (email.isEmpty() || password.isEmpty() || email.trimmed().isEmpty() || password.trimmed().isEmpty())
+        return false;
+    return true;
 }
 
 bool QGoogleSignInApplication::isFirebaseInitialized() const

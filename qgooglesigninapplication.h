@@ -87,6 +87,9 @@ private:
     void onIdTokenChanged(PointerContainer<firebase::auth::Auth>);
 
 private:
+    bool checkEmailAndPassword(const QString& email,const QString& password);
+
+private:
     bool isFirebaseInitialized() const;
     void setFirebaseInitialized(bool b);
 
