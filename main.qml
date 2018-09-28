@@ -1,4 +1,4 @@
-import QtQuick 2.10
+import QtQuick 2.11
 import QtQuick.Window 2.10
 import QtQuick.Controls 2.2
 
@@ -13,15 +13,30 @@ Window
     {
         spacing: aButton.height/4
         anchors.horizontalCenter: parent.horizontalCenter
-        GSIButton
+        TextArea
         {
-           height: aButton.height
-           MouseArea
-           {
-               anchors.fill: parent
-               onPressed: ctrlMain.signInWithGSI()
-               enabled: theApp.applicationInitialized
-           }
+            text: qsTr("<a href=\"https://github.com/SR-gh/QGoogleSignIn\">https://github.com/SR-gh/QGoogleSignIn</a><br/>Qt Firebase auth made easy !<br/>Nota: «Sign In» is displayed when anonymously logged, but it will try to link accounts. When not anonymously logged, «Linking» is displayed.")
+            width: root.width*0.9
+            wrapMode: TextEdit.Wrap
+            textFormat: TextEdit.RichText
+            onLinkActivated: openUrlExternally(link)
+        }
+        Row
+        {
+            GSIButton
+            {
+               height: aButton.height
+               MouseArea
+               {
+                   anchors.fill: parent
+                   onPressed: ctrlMain.signInWithGSI()
+                   enabled: theApp.applicationInitialized
+               }
+            }
+            Label
+            {
+                text: (!theApp.user.signedIn || theApp.user.anonymous) ? qsTr("Sign In") : qsTr("Linking")
+            }
         }
         TextField
         {
@@ -41,7 +56,7 @@ Window
         {
             Button
             {
-                text: qsTr("Sign In with Email")
+                text: (!theApp.user.signedIn || theApp.user.anonymous) ? qsTr("Sign In with Email") : qsTr("Link your Email account")
                 onPressed: ctrlMain.signInWithEmail(email.text, password.text)
                 enabled: email.len && theApp.applicationInitialized
             }
@@ -49,7 +64,7 @@ Window
             {
                 text: qsTr("Sign Up")
                 onPressed: ctrlMain.signUpWithEmail(email.text, password.text)
-                enabled: email.len && theApp.applicationInitialized
+                enabled: email.len && theApp.applicationInitialized && (!theApp.user.signedIn || theApp.user.anonymous)
             }
         }
         Button
@@ -57,7 +72,7 @@ Window
             id:aButton
             text: qsTr("Sign In anonymously")
             onPressed: ctrlMain.signInAnonymously()
-            enabled: theApp.applicationInitialized
+            enabled: theApp.applicationInitialized && !theApp.user.signedIn
         }
         Button
         {
@@ -67,7 +82,7 @@ Window
         }
         Label
         {
-            text: theApp.user.signedIn ? qsTr("Signed In") : qsTr("Signed Out")
+            text: theApp.user.signedIn ? qsTr("Signed In") + (theApp.user.anonymous ? qsTr(" anonymously") : qsTr("")) : qsTr("Signed Out")
         }
         Column
         {

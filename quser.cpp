@@ -22,6 +22,21 @@ void QUser::setSignedIn(bool value)
     }
 }
 
+bool QUser::isAnonymous() const
+{
+    return anonymous;
+}
+
+void QUser::setAnonymous(bool value)
+{
+    const bool changed = value != anonymous;
+    if (changed)
+    {
+        anonymous = value;
+        emit anonymousChanged();
+    }
+}
+
 QString QUser::getEmail() const
 {
     return email;

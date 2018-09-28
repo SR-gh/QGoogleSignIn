@@ -221,6 +221,7 @@ void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth:
     {
         qInfo() << "IdToken changed for " << user->uid().c_str() << user->display_name().c_str() << user->email().c_str();
         m_user.setSignedIn(true);
+        m_user.setAnonymous(user->is_anonymous());
         m_user.setEmail(user->email().c_str());
         m_user.setName(user->display_name().c_str());
         m_user.setUrl(user->photo_url().c_str());
@@ -269,6 +270,7 @@ void QGoogleSignInApplication::setUser(QUser *user)
     else
     {
         m_user.setSignedIn(user->getSignedIn());
+        m_user.setAnonymous(user->isAnonymous());
         m_user.setEmail(user->getEmail());
         m_user.setName(user->getName());
         m_user.setUrl(user->getUrl());
