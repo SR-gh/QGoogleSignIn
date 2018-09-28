@@ -22,16 +22,16 @@ It can be useful to add Google Sign In authentication to your Android mobile app
 Below, this is **NOT** a step by step build procedure. It should be sufficient to have you getting the app running.
 
 Prerequisites :
-* Qt (tested with 5.10.1)
+* Qt (tested with 5.11.1)
 * Android SDK (I use Android Studio and its SDK manager to pick the versions)
 * Android NDK (version r10e, from the archives)
 
 Useful :
-* QtCreator for C++ editing (tested with 4.6.0-rc1)
+* QtCreator for C++ editing (tested with 4.7.0)
 * Android Studio for Java editing (tested with 3.1.3)
 
 Steps to build :
-* download firebase SDK, install it anywhere (tested with 5.1.0)
+* download firebase SDK, install it anywhere (tested with 5.3.0)
 * gradle should download automatically Java dependencies
 * you need to create a Firebase project, and add your client application to it
 * you need to allow Google Sign In authentication on your project
