@@ -34,7 +34,6 @@ void QFirebase::init()
                                 (void) app;
                                 auto myThis = static_cast<QFirebase*>(context);
                                 ::firebase::InitResult init_result;
-                                myThis->m_firebaseAuth = firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get());
                                 ::firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get(), &init_result);
                                 qInfo() << "Finished FB init with result=" << init_result;
                                 myThis->whenFirebaseInitializationCompletes(init_result);
@@ -207,12 +206,7 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
             }
             else
             {
-                const firebase::auth::SignInResult& sir = *result.result();
-                firebase::auth::User* user = contextDataLambda->m_firebaseAuth->current_user();//sir.user;
-                QString uid;
-                if (user)
-                    uid = user->uid().c_str();
-                qInfo() << "Failed to link user" << uid.toUtf8() << "with error : no=" << result.error() << "message=" << result.error_message();
+                qInfo() << "Failed to link user with error : no=" << result.error() << "message=" << result.error_message();
                 emit contextDataLambda->firebaseAuthLinkFailed(result.error(), result.error_message());
             }
         },
@@ -222,6 +216,7 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
 void QFirebase::whenFirebaseInitializationCompletes(firebase::InitResult result)
 {
     qInfo() << "Firebase initialization completed. Registering Firebase auth listeners.";
+    m_firebaseAuth = std::unique_ptr<firebase::auth::Auth>(firebase::auth::Auth::GetAuth(m_firebaseApp.get()));
     m_firebaseAuth->AddAuthStateListener(firebaseAuthListener.get());
     m_firebaseAuth->AddIdTokenListener(firebaseAuthTokenListener.get());
     emit firebaseInitializationCompleted(result);
@@ -247,6 +242,17 @@ void QFirebase::QFirebaseAuthListener::OnAuthStateChanged(firebase::auth::Auth *
     emit caller->authStateChanged(PointerContainer<firebase::auth::Auth>(auth));
 }
 
+// This is the preferred callback to handle user sign in state change.
+// Sadly, it does not inform about which provider was used to log in.
+// This information can be obtained from the Sign In Future callback.
+// The Sign In Future callback is generally called after the IdTokenChanged listener.
+// It also may not be called at all, for instance at application startup.
+// So, if we do want to know about the provider used, we should get this
+// information when processing Sign In, and then persisting it.
+// As we can determine, this is independent from Firebase.
+// The application user is something different from information obtained
+// from authentication provider accounts. An application may want to get
+// them or not. Right now
 void QFirebase::QFirebaseAuthListener::OnIdTokenChanged(firebase::auth::Auth *auth)
 {
     // We're in a Firebase thread. Use only const function on auth, as we're not

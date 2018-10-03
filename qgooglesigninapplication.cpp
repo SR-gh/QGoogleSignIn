@@ -28,6 +28,7 @@ void QGoogleSignInApplication::init()
     connect(qFirebase, &QFirebase::firebaseAuthLinkFailed, this, &QGoogleSignInApplication::onFirebaseAuthLinkFailed);
     connect(qFirebase, &QFirebase::authStateChanged, this, &QGoogleSignInApplication::onAuthStateChanged);
     connect(qFirebase, &QFirebase::idTokenChanged, this, &QGoogleSignInApplication::onIdTokenChanged);
+    connect(qFirebase, &QFirebase::idTokenChanged, this, &QGoogleSignInApplication::onIdTokenChangedUserInfo);
 
     // GSI handling
     connect(qAuthGSI, &QAuthGSI::gsiTokenReceived, this, &QGoogleSignInApplication::onGsiTokenReceived);
@@ -233,6 +234,28 @@ void QGoogleSignInApplication::onIdTokenChanged(PointerContainer<firebase::auth:
     }
 }
 
+void QGoogleSignInApplication::onIdTokenChangedUserInfo(PointerContainer<firebase::auth::Auth> pca)
+{
+    m_userInfo.clear();
+    firebase::auth::Auth* auth = pca.getPtr();
+    firebase::auth::User* user = auth->current_user();
+    if (user != nullptr)
+    {
+        for (firebase::auth::UserInfoInterface* v : user->provider_data())
+        {
+            QVariantMap aMap;
+            aMap.insert("uid", v->uid().c_str());
+            aMap.insert("email", v->email().c_str());
+            aMap.insert("display_name", v->display_name().c_str());
+            aMap.insert("photo_url", v->photo_url().c_str());
+            aMap.insert("provider_id", v->provider_id().c_str());
+            aMap.insert("phone_number", v->phone_number().c_str());
+            m_userInfo.append(QVariant::fromValue(aMap));
+        }
+    }
+    emit userInfoChanged();
+}
+
 bool QGoogleSignInApplication::checkEmailAndPassword(const QString &email, const QString &password)
 {
     if (email.isEmpty() || password.isEmpty() || email.trimmed().isEmpty() || password.trimmed().isEmpty())
@@ -275,4 +298,9 @@ void QGoogleSignInApplication::setUser(QUser *user)
         m_user.setName(user->getName());
         m_user.setUrl(user->getUrl());
     }
+}
+
+const QVariantList& QGoogleSignInApplication::getUserInfo() const
+{
+    return m_userInfo;
 }

@@ -31,6 +31,8 @@ class QGoogleSignInApplication : public QGuiApplication
 public:
     Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
     Q_PROPERTY(QUser* user READ getUser NOTIFY userChanged) // NOTIFY signal mandatory. See Issue #18.
+    // Extended properties
+    Q_PROPERTY(QVariantList userInfo READ getUserInfo NOTIFY userInfoChanged)
 
 public:
 #ifdef Q_QDOC
@@ -62,13 +64,17 @@ public:
     QUser *getUser();
     void setUser(QUser *user);
 
+    // extended property related
+    const QVariantList& getUserInfo() const;
+
 signals:
-    //    // FB
-    //    void firebaseAuthSucceed(firebase::auth::User* user);
-//    void firebaseAuthFailed(int errorCode, QString errorMessage);
     void error(const QString errorMessage);
     void applicationInitializedChanged(bool);
     void userChanged();
+
+    // extended property related
+    void userInfoChanged();
+
 private:
     Q_DISABLE_COPY(QGoogleSignInApplication)
     void onApplicationStateChanged(Qt::ApplicationState state);
@@ -87,6 +93,10 @@ private:
     void onIdTokenChanged(PointerContainer<firebase::auth::Auth>);
 
 private:
+    // Extension functions for the application.
+    void onIdTokenChangedUserInfo(PointerContainer<firebase::auth::Auth>);
+
+private:
     bool checkEmailAndPassword(const QString& email,const QString& password);
 
 private:
@@ -101,6 +111,7 @@ private:
     QList<Controller*> controllers;
 
     QUser m_user;
+    QVariantList m_userInfo;
 };
 
 #endif // QGOOGLESIGNINAPPLICATION_H

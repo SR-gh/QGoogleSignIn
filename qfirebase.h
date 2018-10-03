@@ -97,7 +97,7 @@ private:
     //Firebase
     QAndroidJniEnvironment m_qjniEnv;
     std::unique_ptr<firebase::App> m_firebaseApp; // must be deleted before m_qjniEnv, hence order of declaration matters.
-    firebase::auth::Auth* m_firebaseAuth = nullptr; // non owning
+    std::unique_ptr<firebase::auth::Auth> m_firebaseAuth;// owning = nullptr; // non owning
     std::unique_ptr<QFirebaseAuthListener> firebaseAuthListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
     std::unique_ptr<QFirebaseAuthListener> firebaseAuthTokenListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
 };
