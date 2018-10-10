@@ -12,6 +12,7 @@ QFirebase::QFirebase(QObject *parent) : QObject(parent),
     firebaseAuthListener(std::make_unique<QFirebaseAuthListener>(this)),
     firebaseAuthTokenListener(std::make_unique<QFirebaseAuthListener>(this))
 {
+    connect(this, &QFirebase::firebaseInitializationPartiallyCompleted, this, &QFirebase::onFirebaseInitializationPartiallyCompleted);
 }
 
 void QFirebase::init()
@@ -36,7 +37,7 @@ void QFirebase::init()
                                 ::firebase::InitResult init_result;
                                 ::firebase::auth::Auth::GetAuth(myThis->m_firebaseApp.get(), &init_result);
                                 qInfo() << "Finished FB init with result=" << init_result;
-                                myThis->whenFirebaseInitializationCompletes(init_result);
+                                emit myThis->firebaseInitializationPartiallyCompleted(init_result, QPrivateSignal());
                                 return init_result;
     });
 }
@@ -213,9 +214,9 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
     context);
 }
 
-void QFirebase::whenFirebaseInitializationCompletes(firebase::InitResult result)
+void QFirebase::onFirebaseInitializationPartiallyCompleted(firebase::InitResult result)
 {
-    qInfo() << "Firebase initialization completed. Registering Firebase auth listeners.";
+    qInfo() << "Firebase initialization partially completed. Registering Firebase auth listeners.";
     m_firebaseAuth = std::unique_ptr<firebase::auth::Auth>(firebase::auth::Auth::GetAuth(m_firebaseApp.get()));
     m_firebaseAuth->AddAuthStateListener(firebaseAuthListener.get());
     m_firebaseAuth->AddIdTokenListener(firebaseAuthTokenListener.get());
