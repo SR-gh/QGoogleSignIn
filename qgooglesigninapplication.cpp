@@ -200,11 +200,15 @@ void QGoogleSignInApplication::onFirebaseAuthLinkFailed(int errorCode, QString e
 
 void QGoogleSignInApplication::onFirebaseInitializationComplete(firebase::InitResult result)
 {
-    setFirebaseInitialized(0 == result);
+    const bool isCorrectlyInitialized = 0 == result;
+    setFirebaseInitialized(isCorrectlyInitialized);
+    if (!isCorrectlyInitialized)
+        emit error("Error during initialization");
 }
 
 void QGoogleSignInApplication::onAuthStateChanged(PointerContainer<firebase::auth::Auth> pca)
 {
+    (void) pca;
     // We chose to handle state in onIdTokenChanged(), consequently
     // we gently ignore this message.
     qInfo() << "Auth state changed.";
