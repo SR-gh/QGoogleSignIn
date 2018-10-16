@@ -31,7 +31,7 @@ class QGoogleSignInApplication : public QGuiApplication
 public:
     Q_PROPERTY(bool applicationInitialized READ isFirebaseInitialized WRITE setFirebaseInitialized NOTIFY applicationInitializedChanged)
     Q_PROPERTY(QUser* user READ getUser NOTIFY userChanged) // NOTIFY signal mandatory. See Issue #18.
-    // Extended properties
+    // Extended properties, not mandatory for the POC.
     Q_PROPERTY(QVariantList userInfo READ getUserInfo NOTIFY userInfoChanged)
 
 public:

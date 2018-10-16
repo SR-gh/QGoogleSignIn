@@ -4,33 +4,15 @@ import QtQuick.Controls 2.2
 
 Window
 {
-    function printobj(v, s) {
-      s = s || 1;
-      var t = '';
-      switch (typeof v) {
-        case "object":
-          t += "\n";
-          for (var i in v) {
-            t += new Array(s).join(" ")+i+": ";
-            t += printobj(v[i], s+3);
-          }
-          break;
-        default: //number, string, boolean, null, undefined
-          t += v+" ("+typeof v+")\n";
-          break;
-      }
-      return t;
-    }
     id: root
     visible: true
     width: 640
     height: 480
     title: qsTr("Firebase Google Sign In demonstration")
 
-    SplitView2
+    Flickable
     {
         anchors.fill: parent
-        orientation: Qt.Vertical
         Column
         {
             spacing: aButton.height/4
@@ -59,7 +41,7 @@ Window
                 TextField
                 {
                     width: 4*root.width/10
-                    property int len:  displayText.length    // gets updated when editing
+                    property int len: displayText.length    // gets updated when editing
                     id: email
                     placeholderText: qsTr("email")
                 }
@@ -129,28 +111,26 @@ Window
                     source: theApp.user.url
                 }
             }
-        }
-        Column
-        {
-            spacing: aButton.height/4
-            anchors.horizontalCenter: parent.horizontalCenter
-            ListView
+            Row
             {
-                scale: 0.5
+                anchors.horizontalCenter: parent.horizontalCenter
+                Label
+                {
+                    text: qsTr("User info")
+                }
+                ComboBox
+                {
+                    id: providerChoice
+                    model: theApp.userInfo
+                    textRole: "provider_id"
+                    enabled: theApp.userInfo && theApp.userInfo.length > 0
+                }
+            }
+            ProviderDelegate
+            {
                 width: root.width
-                height: parent.height/4
-                model: theApp.userInfo
-                delegate: ProviderDelegate
-                {
-                    aModel: modelData // For a reason, model does not work.
-                    width: parent.width
-                    color: "red"
-                }
-                onModelChanged:
-                {
-                    console.info(printobj(model));
-                }
-
+                aModel: providerChoice.model[providerChoice.currentIndex]
+                visible: providerChoice.enabled
             }
         }
     }

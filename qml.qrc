@@ -4,6 +4,5 @@
         <file>GSIButton.qml</file>
         <file>img/g_icon.svg</file>
         <file>ProviderDelegate.qml</file>
-        <file>SplitView2.qml</file>
     </qresource>
 </RCC>

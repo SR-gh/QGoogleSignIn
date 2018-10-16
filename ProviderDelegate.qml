@@ -1,42 +1,43 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.2
 
-Rectangle
+Item
 {
     id: root
     property var aModel
-    function obj2str(obj)
-    {
-        var output = '';
-        for (var property in obj) {
-          output += property + ': ' + obj[property]+'; ';
-        }
-        return output
-    }
-    border.color: "#222"
-    border.width: 2
     width: parent.width
     height: childrenRect.height
 
     Column
     {
+        anchors.left: parent.left
+        anchors.right: parent.right
         Repeater
         {
+            anchors.left: parent.left
+            anchors.right: parent.right
             id:r
-            property var theKeys: Object.keys(aModel)
-            model: theKeys.length
-            Row
+            property var theKeys: aModel ? Object.keys(aModel) : null
+            model: (theKeys && theKeys.length) ? theKeys.length|0 : 0
+            Item
             {
                 property var k: r.theKeys
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: childrenRect.height
                 Label
                 {
-                    width: root.width/2
+                    anchors.left: parent.left
+                    width: parent.width * 2/5
                     text: k[index]
                 }
                 TextField
                 {
-                    width: root.width/2
+                    anchors.right: parent.right
+                    width: parent.width * 3/5
                     text: aModel[k[index]]
+                    readOnly: true
+                    selectByMouse: true
                 }
             }
         }
