@@ -84,6 +84,8 @@ signals:
     // emitted on initialization completion. Any call to a function of a QFirebase instance
     // before obtaining a successful result from this signal has undefined behaviour.
     void firebaseInitializationCompleted(firebase::InitResult result);
+    // internal, used during FB initialization, to handle threading
+    void firebaseInitializationPartiallyCompleted(firebase::InitResult result, QPrivateSignal);
     // Reemitted from Firebase
     void authStateChanged(PointerContainer<firebase::auth::Auth>);
     void idTokenChanged(PointerContainer<firebase::auth::Auth>);
@@ -92,12 +94,12 @@ private:
     void linkWithCredentials(firebase::auth::Credential& credential);
     void signInWithCredentials(firebase::auth::Credential& credential);
 private:
-    void whenFirebaseInitializationCompletes(firebase::InitResult result);
+    void onFirebaseInitializationPartiallyCompleted(firebase::InitResult result);
 private:
     //Firebase
     QAndroidJniEnvironment m_qjniEnv;
     std::unique_ptr<firebase::App> m_firebaseApp; // must be deleted before m_qjniEnv, hence order of declaration matters.
-    firebase::auth::Auth* m_firebaseAuth = nullptr; // non owning
+    std::unique_ptr<firebase::auth::Auth> m_firebaseAuth;// must be deleted before m_firebaseApp, hence order of declaration matters.
     std::unique_ptr<QFirebaseAuthListener> firebaseAuthListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
     std::unique_ptr<QFirebaseAuthListener> firebaseAuthTokenListener; // must be deleted before m_qjniEnv, hence order of declaration matters.
 };

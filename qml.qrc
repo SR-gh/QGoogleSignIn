@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>GSIButton.qml</file>
         <file>img/g_icon.svg</file>
+        <file>ProviderDelegate.qml</file>
     </qresource>
 </RCC>
