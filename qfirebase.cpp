@@ -68,14 +68,8 @@ void QFirebase::signInWithCredentials(firebase::auth::Credential &credential)
                 const firebase::auth::SignInResult& sir = *result.result();
                 firebase::auth::User* user = sir.user;
                 qInfo() << "Credentials Sign In. Authenticated user :"  << user->uid().c_str() << user->display_name().c_str() << "(" << user->email().c_str() << ") (provider,user_name)=(" << sir.info.provider_id.c_str() << "," << sir.info.user_name.c_str() << ")";
-                auto profile = sir.info.profile;
-                for (const auto& p : profile)
-                {
-                    qInfo() << p.first.type() << p.second.type();
-                    qInfo() << p.first.AsString().string_value() << p.second.AsString().string_value();
-                }
-
-                emit contextDataLambda->firebaseAuthSucceed(user);
+                // Deprecated : use user state changed signals instead.
+                emit contextDataLambda->firebaseAuthSucceed();
             }
             else
             {
@@ -116,8 +110,8 @@ void QFirebase::signUpWithEmail(QString email, QString password)
             {
                 firebase::auth::User* user = *result.result();
                 qInfo() << "Firebase Email Created authenticated user :"  << user->uid().c_str() << user->display_name().c_str() << "(" << user->email().c_str() << ")";
-
-                emit contextDataLambda->firebaseAuthSucceed(user);
+                // Deprecated : use user state changed signals instead.
+                emit contextDataLambda->firebaseAuthSucceed();
             }
             else
             {
@@ -142,8 +136,8 @@ void QFirebase::signInAnonymously()
             {
                 firebase::auth::User* user = *result.result();
                 qInfo() << "Anonymous authenticated user :" << user->uid().c_str() << user->display_name().c_str();
-
-                emit contextDataLambda->firebaseAuthSucceed(user);
+                // Deprecated : use user state changed signals instead.
+                emit contextDataLambda->firebaseAuthSucceed();
             }
             else
             {
@@ -202,8 +196,8 @@ void QFirebase::linkWithCredentials(firebase::auth::Credential& credential)
                 const firebase::auth::SignInResult& sir = *result.result();
                 firebase::auth::User* user = sir.user;
                 qInfo() << "Linked user :" << user->uid().c_str() << user->display_name().c_str() << sir.info.provider_id.c_str();
-
-                emit contextDataLambda->firebaseAuthLinkSucceed(user);
+                // Deprecated : use user state changed signals instead.
+                emit contextDataLambda->firebaseAuthLinkSucceed();
             }
             else
             {

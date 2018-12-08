@@ -86,7 +86,7 @@ INCLUDEPATH += \
 
 # NOTE the order of linking is important!
 android {
-    FIREBASE_SDK_LIBS_PATH = $$FIREBASE_SDK_PATH/libs/android/$$ANDROID_TARGET_ARCH/gnustl
+    FIREBASE_SDK_LIBS_PATH = $$FIREBASE_SDK_PATH/libs/android/$$ANDROID_TARGET_ARCH/c++
     DEPENDPATH += $$FIREBASE_SDK_LIBS_PATH
 }
 

@@ -78,16 +78,18 @@ signals:
 private:
     Q_DISABLE_COPY(QGoogleSignInApplication)
     void onApplicationStateChanged(Qt::ApplicationState state);
-    void onGsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason);   // pas trop de raison de le mettre ici, si ? Si l'appli veut le choper, pourquoi pas. Mais comment dérancher le comportement par défaut, dans ce cas-là ?
+    void onGsiTokenReceived(QString tokenId, QAuthGSI::GSIJavaIntent reason);
     void onGsiTokenRequestFailed(int resultCode, QSharedPointer<const QAndroidJniObject> jniObject);
     void onFailedRefresh(int statusCode, bool silently);
     void onSuccessfulSignOut();
 
-    void onFirebaseAuthSucceed(firebase::auth::User* user); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
+    // @deprecated
+    void onFirebaseAuthSucceed();
     void onFirebaseAuthFailed(int errorCode, QString errorMessage);
-    void onFirebaseAuthLinkSucceed(firebase::auth::User* user);
+    // @deprecated
+    void onFirebaseAuthLinkSucceed();
     void onFirebaseAuthLinkFailed(int errorCode, QString errorMessage);
-    void onFirebaseInitializationComplete(firebase::InitResult result);
+    void onFirebaseInitializationComplete(firebase::InitResult result); // firebase namespace used in application : pros/cons. No need to duplicate Firebase models IMHO, so let's use em. App will encapsulate them anyway.
 
     void onAuthStateChanged(PointerContainer<firebase::auth::Auth>);
     void onIdTokenChanged(PointerContainer<firebase::auth::Auth>);
@@ -97,14 +99,14 @@ private:
     void onIdTokenChangedUserInfo(PointerContainer<firebase::auth::Auth>);
 
 private:
-    bool checkEmailAndPassword(const QString& email,const QString& password);
+    bool checkEmailAndPassword(const QString& email,const QString& password) const;
 
 private:
     bool isFirebaseInitialized() const;
     void setFirebaseInitialized(bool b);
 
-    QFirebase* qFirebase = nullptr;   // child deletion.
-    QAuthGSI* qAuthGSI = nullptr;     // child deletion.
+    QFirebase* qFirebase = nullptr;   // deleted by Qt as a child of this.
+    QAuthGSI* qAuthGSI = nullptr;     // deleted by Qt as a child of this.
 
     bool firebaseInitialized = false;
 

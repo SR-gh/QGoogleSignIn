@@ -7,7 +7,8 @@
 class Controller
 {
 public:
-    Controller(const QString& aName);
+    explicit Controller(const QString& aName);
+    virtual ~Controller() = default;
     QString getName() const
     {
         return name;

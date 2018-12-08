@@ -77,16 +77,18 @@ public:
 
 signals:
     // FB
-    void firebaseAuthSucceed(firebase::auth::User* user);
+    // @deprecated
+    void firebaseAuthSucceed();
     void firebaseAuthFailed(int errorCode, QString errorMessage);
-    void firebaseAuthLinkSucceed(firebase::auth::User* user);
+    // @deprecated
+    void firebaseAuthLinkSucceed();
     void firebaseAuthLinkFailed(int errorCode, QString errorMessage);
     // emitted on initialization completion. Any call to a function of a QFirebase instance
     // before obtaining a successful result from this signal has undefined behaviour.
     void firebaseInitializationCompleted(firebase::InitResult result);
     // internal, used during FB initialization, to handle threading
     void firebaseInitializationPartiallyCompleted(firebase::InitResult result, QPrivateSignal);
-    // Reemitted from Firebase
+    // Reemitted from Firebase. Caution : Auth object considered thread safe, not sure.
     void authStateChanged(PointerContainer<firebase::auth::Auth>);
     void idTokenChanged(PointerContainer<firebase::auth::Auth>);
 

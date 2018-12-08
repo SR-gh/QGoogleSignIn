@@ -162,18 +162,9 @@ void QGoogleSignInApplication::onSuccessfulSignOut()
     qInfo() << "User successfuly signed out of the application";
 }
 
-void QGoogleSignInApplication::onFirebaseAuthSucceed(firebase::auth::User *user)
+void QGoogleSignInApplication::onFirebaseAuthSucceed()
 {
-    qInfo() << "User successfuly signed in the application. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
-    assert(user);
-    const std::string providerId = user->provider_id();
-    qInfo() << "provider=" << providerId.c_str();
-    firebase::auth::User * authUser = qFirebase->getUser();
-    const std::string authProviderId = authUser->provider_id();
-    qInfo() << "authProviderId=" << authProviderId.c_str();
-    for (firebase::auth::UserInfoInterface* v : authUser->provider_data())
-        qInfo() << v->provider_id().c_str() << v->uid().c_str();
-    qInfo() << "The user is" << (authUser->is_anonymous() ? "" : "not") << "anonymously signed in.";
+    // Deprecated : use user state changed signals instead.
 }
 
 void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString errorMessage)
@@ -184,10 +175,9 @@ void QGoogleSignInApplication::onFirebaseAuthFailed(int errorCode, QString error
     emit error(errorMessage);
 }
 
-void QGoogleSignInApplication::onFirebaseAuthLinkSucceed(firebase::auth::User *user)
+void QGoogleSignInApplication::onFirebaseAuthLinkSucceed()
 {
-    (void) user;
-    qInfo() << "User successfuly linked an account to their Firebase account. You may want to add some extra code here. You may want to rely only on user change listener otherwise.";
+    // Deprecated : use user state changed signals instead.
 }
 
 void QGoogleSignInApplication::onFirebaseAuthLinkFailed(int errorCode, QString errorMessage)
@@ -260,7 +250,7 @@ void QGoogleSignInApplication::onIdTokenChangedUserInfo(PointerContainer<firebas
     emit userInfoChanged();
 }
 
-bool QGoogleSignInApplication::checkEmailAndPassword(const QString &email, const QString &password)
+bool QGoogleSignInApplication::checkEmailAndPassword(const QString &email, const QString &password) const
 {
     if (email.isEmpty() || password.isEmpty() || email.trimmed().isEmpty() || password.trimmed().isEmpty())
         return false;
